@@ -7,10 +7,10 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="マネ風呂" />
-<meta name="theme-color" content="#1e293b" />
+<meta name="theme-color" content="#eaf6fa" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-192.png" />
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23334155'/%3E%3Cstop offset='1' stop-color='%230f172a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='34' font-family='Arial,sans-serif' font-size='44' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'%3E%C2%A5%3C/text%3E%3C/svg%3E" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%235ccde8'/%3E%3Cstop offset='1' stop-color='%231476a8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Crect x='10' y='31' width='44' height='3' rx='1.5' fill='white'/%3E%3Cpath d='M12 33h40v6a11 11 0 0 1-11 11H23a11 11 0 0 1-11-11z' fill='white'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-size='14' font-weight='bold' fill='%2312628a' text-anchor='middle'%3E%C2%A5%3C/text%3E%3Cpath d='M26 13c-2 3 2 5 0 8M32 11c-2 3 2 6 0 9M38 13c-2 3 2 5 0 8' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <title>マネ風呂</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -237,6 +237,67 @@
 
   .toast { position:fixed; left:50%; bottom:calc(90px + var(--safe-bottom)); transform:translateX(-50%) translateY(20px); background:rgba(30,41,59,.95); color:#fff; padding:11px 18px; border-radius:12px; font-size:13.5px; font-weight:500; opacity:0; transition:opacity .25s, transform .25s; z-index:1100; pointer-events:none; white-space:nowrap; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ===== マネ風呂：お風呂のテーマ ===== */
+  :root {
+    --bg: #eaf6fa; --tile: #d6ecf3; --water: #8fd6ea; --water-deep: #1b88b3; --navy: #0e4a63;
+    --blue: #1a86b0; --gold: #0e6f96; --wood: #c99a62; --wood-dark: #9c6f3c; --steam: rgba(255,255,255,.75);
+  }
+  html, body { background: var(--bg); }
+  #app { background-color: var(--bg); background-image: linear-gradient(var(--tile) 1px, transparent 1px), linear-gradient(90deg, var(--tile) 1px, transparent 1px); background-size: 30px 30px; }
+  .navbar { background: rgba(234,246,250,.9); border-bottom-color: rgba(27,136,179,.18); }
+  .navbar .title.brand { display: inline-flex; align-items: center; gap: 6px; color: var(--navy); letter-spacing: .04em; }
+  .navbar .title.brand::before { content: ''; width: 22px; height: 22px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231b88b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12h18'/%3E%3Cpath d='M4 12v2a6 6 0 0 0 6 6h4a6 6 0 0 0 6-6v-2'/%3E%3Cpath d='M7 20l-1 2M17 20l1 2'/%3E%3Cpath d='M9 4c-1 1.5 1 2.5 0 4M13 3c-1 1.5 1 3 0 5'/%3E%3C/svg%3E") center/contain no-repeat; }
+  .icon-btn { color: var(--blue); }
+
+  /* 湯船の帯（いちばん上） */
+  .tub { position: relative; overflow: hidden; border-radius: 22px 22px 34px 34px; padding: 15px 18px 16px; margin-bottom: 14px; color: #fff; background: linear-gradient(180deg, #55c3e1 0%, #1b88b3 100%); box-shadow: 0 10px 24px -12px rgba(14,74,99,.55), inset 0 0 0 3px rgba(255,255,255,.55); }
+  .tub .waves { position: absolute; left: -10%; right: -10%; top: -6px; height: 22px; opacity: .55; }
+  .tub .waves svg { width: 120%; height: 100%; animation: tubwave 7s linear infinite; }
+  @keyframes tubwave { from { transform: translateX(0); } to { transform: translateX(-16.6%); } }
+  @media (prefers-reduced-motion: reduce) { .tub .waves svg, .bubble-up { animation: none !important; } }
+  .tub .row { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+  .tub .lbl { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); }
+  .tub .amt { font-size: 28px; font-weight: 800; letter-spacing: .01em; line-height: 1.15; margin-top: 2px; }
+  .tub .amt .yen { font-size: 19px; margin-right: 2px; opacity: .9; }
+  .tub .side { text-align: right; }
+  .tub .side .v { font-size: 17px; font-weight: 800; white-space: nowrap; }
+  .tub .side .v.neg { color: #ffe1c2; }
+  .tub .note { position: relative; font-size: 11px; color: rgba(255,255,255,.78); margin-top: 6px; line-height: 1.5; }
+  .bubble-up { position: absolute; bottom: -10px; border-radius: 50%; border: 2px solid rgba(255,255,255,.6); animation: bubble 6s ease-in infinite; }
+  @keyframes bubble { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-120px); opacity: 0; } }
+
+  /* 湯船カード：下にうっすらお湯 */
+  .acct { border-radius: 18px 18px 22px 22px; box-shadow: 0 1px 3px rgba(14,74,99,.1); background: linear-gradient(180deg, #fff 0%, #fff 72%, color-mix(in srgb, var(--bc, #8fd6ea) 10%, #e9f7fb) 72%, color-mix(in srgb, var(--bc, #8fd6ea) 16%, #def2f8) 100%); }
+  .acct::before { width: 6px; border-radius: 0 4px 4px 0; }
+  .acct.top1 { background: linear-gradient(180deg, #fffaf0 0%, #fff 72%, #e6f6fb 72%, #d6f0f7 100%); box-shadow: 0 3px 12px -3px rgba(27,136,179,.35); }
+  /* 順位は銭湯の下足札 */
+  .medal { border-radius: 8px; width: 42px; height: 48px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.35), 0 2px 4px rgba(0,0,0,.15); }
+  .medal::after { content: ''; position: absolute; top: 5px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: rgba(255,255,255,.75); }
+  .medal .rno { margin-top: 7px; }
+  .keep .kamt { color: var(--gold); }
+  .badge.inc { background: #1aa37a; } .badge.bonus { background: #4f6fe6; } .badge.draw { background: #c98a2b; }
+  .tp-main { background: #ffe9c4; color: #9a5b00; }
+  .tp-out { background: #e3eef2; color: #557483; }
+  .acct.cand::before { background: #9fb6c0 !important; }
+  .divider { color: #557483; }
+  .divider::before, .divider::after { background: rgba(27,136,179,.25); }
+  .segbar { background: rgba(27,136,179,.12); }
+
+  /* ＋ボタンは泡 */
+  .fab { background: radial-gradient(circle at 32% 28%, #ffffff 0 8%, #8fe0f2 9% 30%, #1b88b3 70%); color: #fff; box-shadow: 0 8px 20px -6px rgba(14,74,99,.6), inset 0 0 0 2px rgba(255,255,255,.5); font-weight: 300; }
+  .tabbar { background: rgba(240,249,252,.94); border-top-color: rgba(27,136,179,.18); }
+  .tabbar button.on { color: var(--water-deep); }
+  .btn-save, .flow-add { background: linear-gradient(180deg, #2a9cc6, #14739c); }
+  .flow-add { box-shadow: 0 6px 16px -8px rgba(14,74,99,.6); }
+  .seg4 .iopt.sel { background: #1aa37a; border-color: #1aa37a; }
+  .ios-switch.on.draw { background: #c98a2b; } .ios-switch.on.cand { background: #6b8b99; }
+  .diagram, .flow-sum .fs, .tr-card, .input, .addline, .togglerow, .frow, .ed-tr, .set-group { box-shadow: 0 1px 2px rgba(14,74,99,.08); }
+  .flow-sum .fs.mv .v, .tr-card .amt, .mflow .net.mv { color: var(--water-deep); }
+  .toast { background: rgba(14,74,99,.95); }
+  .empty .big { font-size: 46px; }
+  .concept { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 18px; font-size: 13px; line-height: 1.75; color: #345; box-shadow: 0 1px 2px rgba(14,74,99,.08); }
+  .concept b { color: var(--water-deep); }
 </style>
 </head>
 <body>
@@ -245,7 +306,7 @@
   <div id="mainView" class="view active">
     <div class="navbar">
       <span style="width:44px;"></span>
-      <span class="title" id="mainTitle">マネ風呂</span>
+      <span class="title brand" id="mainTitle">マネ風呂</span>
       <button class="icon-btn" id="openSettings" aria-label="設定">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
@@ -254,13 +315,13 @@
     <div class="scroll pane" id="flowPane" hidden></div>
     <button class="fab" id="addBtn" aria-label="口座を追加">＋</button>
     <nav class="tabbar" id="tabbar">
-      <button data-tab="list" class="on" aria-label="口座">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg>
-        口座
+      <button data-tab="list" class="on" aria-label="湯船（口座）">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M4 12v2a6 6 0 0 0 6 6h4a6 6 0 0 0 6-6v-2"/><path d="M7 20l-1 2M17 20l1 2"/><path d="M9 4c-1 1.5 1 2.5 0 4M13 3c-1 1.5 1 3 0 5"/></svg>
+        湯船
       </button>
-      <button data-tab="flow" aria-label="お金の流れ">
+      <button data-tab="flow" aria-label="お湯の流れ">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="16" width="7" height="5" rx="1.5"/><path d="M6.5 8v3.5a2 2 0 0 0 2 2h7a2 2 0 0 1 2 2V16"/><path d="m15.5 14 2 2 2-2"/></svg>
-        お金の流れ
+        お湯の流れ
       </button>
     </nav>
   </div>
@@ -274,11 +335,11 @@
     </div>
     <div class="form">
       <div class="field">
-        <label>出す口座（ここから）</label>
+        <label>出す湯船（ここから）</label>
         <select class="input" id="tFrom"></select>
       </div>
       <div class="field">
-        <label>入る口座（ここへ）</label>
+        <label>入る湯船（ここへ）</label>
         <select class="input" id="tTo"></select>
       </div>
       <div class="field">
@@ -295,7 +356,7 @@
       <div class="field">
         <label>名前（任意）</label>
         <input class="input" id="tName" type="text" placeholder="例）生活費を移す・つみたて用" autocomplete="off" />
-        <div class="form-hint">手で振り込む・定額自動入金・カードの引き落とし口座へ移す、など。口座どうしで動くお金を登録すると、「お金の流れ」に図で出ます。</div>
+        <div class="form-hint">手で振り込む・定額自動入金・カードの引き落とし口座へ移す、など。湯船（口座）どうしで動くお金を登録すると、「お湯の流れ」に図で出ます。</div>
       </div>
       <button class="btn-block btn-save" id="saveTransfer2">保存する</button>
       <button class="btn-block btn-del" id="deleteTransfer" style="display:none;">この流れを削除</button>
@@ -319,7 +380,7 @@
         <input class="input" id="fBranch" type="text" placeholder="例）成増支店" autocomplete="off" />
       </div>
       <div class="field">
-        <label>最低でも置いておきたい額</label>
+        <label>最低水位（これだけは残しておきたい額）</label>
         <div class="amt-wrap">
           <span class="yen">¥</span>
           <input class="input amt" id="fKeep" type="text" inputmode="numeric" placeholder="0" />
@@ -330,7 +391,7 @@
         <textarea class="input" id="fMemo" rows="2" placeholder="例）家賃・光熱費・サブスクの引き落とし"></textarea>
       </div>
       <div class="field">
-        <label>入金（入ってくるお金）</label>
+        <label>給湯（入ってくるお金）</label>
         <div class="seg4" id="incomeSeg">
           <div class="iopt" data-v="none">なし</div>
           <div class="iopt" data-v="salary">給与</div>
@@ -339,30 +400,30 @@
         </div>
       </div>
       <div class="field">
-        <label>毎月の増減（金額 × 回数）</label>
+        <label>蛇口と排水（毎月・金額 × 回数）</label>
         <div id="flowList"></div>
         <div class="addline" id="addFlow">＋ 項目を追加</div>
         <div class="form-hint">「入／出」を選び、金額と月の回数を入力。名前は空でもOK（例：¥10,000 × 2回）。カードには差引だけ表示され、内訳はこの画面で見られます。</div>
       </div>
       <div class="field" id="edTransferField">
-        <label>口座どうしの流れ</label>
+        <label>ほかの湯船との流れ</label>
         <div id="edTransferList"></div>
-        <div class="addline mv" id="edAddTransfer">＋ この口座から移す流れを追加</div>
+        <div class="addline mv" id="edAddTransfer">＋ この湯船から移す流れを追加</div>
         <div class="form-hint" id="edTransferHint">ほかの口座へ移すお金（振り込み・定額自動入金など）を登録すると、「お金の流れ」タブで図になります。</div>
       </div>
       <div class="field">
         <label>フラグ</label>
         <div class="togglerow" id="toggleDraw">
           <div>
-            <div class="t-main">引き落としで勝手に減る</div>
-            <div class="t-sub">自動引き落としあり。最低キープを下回らないよう注意したい口座</div>
+            <div class="t-main">排水口あり（引き落としで勝手に減る）</div>
+            <div class="t-sub">自動引き落としあり。最低水位を下回らないよう注意したい湯船</div>
           </div>
           <div class="ios-switch draw" id="swDraw"><div class="knob"></div></div>
         </div>
         <div class="togglerow" id="toggleCand">
           <div>
-            <div class="t-main">解約候補にする</div>
-            <div class="t-sub">下に薄く表示し、最低キープ合計から外す</div>
+            <div class="t-main">お湯を抜く候補にする（解約候補）</div>
+            <div class="t-sub">下に薄く表示し、最低水位の合計から外す</div>
           </div>
           <div class="ios-switch cand" id="swCand"><div class="knob"></div></div>
         </div>
@@ -394,6 +455,7 @@
           <span class="chev">›</span>
         </div>
       </div>
+      <div class="concept"><b>マネ風呂</b>は、お風呂にお湯をためるように、お金をためるアプリ。口座は<b>湯船</b>、最低キープは<b>最低水位</b>、入ってくるお金は<b>給湯</b>、出ていくお金は<b>排水</b>です。</div>
       <div class="set-desc">データはこの端末の中だけに保存されます。機種変更や別端末で使うときは、書き出したJSONを取り込んでください。口座番号・残高は保存しません。</div>
       <div class="ver" id="versionLabel"></div>
     </div>
@@ -434,7 +496,7 @@
   function del(store, id) { return new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   // ---------- バージョン ----------
-  const APP_VERSION = '1.6.0';
+  const APP_VERSION = '1.7.0';
   function renderVersionLabel() { const el = $('#versionLabel'); if (el) el.textContent = 'v' + APP_VERSION; }
 
   // ---------- State ----------
@@ -467,14 +529,14 @@
     const list = $('#list');
 
     if (state.items.length === 0) {
-      list.innerHTML = `<div class="empty"><div class="big">¥</div>まだ口座がありません。<br>右下の ＋ から、よく使う口座を<br>登録してみましょう。</div>`;
+      list.innerHTML = `<div class="empty"><div class="big">🛁</div>まだ湯船がありません。<br>右下の泡（＋）から、よく使う口座を<br>湯船として登録してみましょう。</div>`;
       if (state.tab === 'flow') renderFlow();
       return;
     }
 
     // フィルタバー（引き落としだけ絞り込み）
     const drawTotal = state.items.filter((x) => x.drawdown).length;
-    let html = `<div class="segbar">
+    let html = tubHTML(active) + `<div class="segbar">
       <div class="seg-opt ${state.filter === 'all' ? 'on' : ''}" data-f="all">すべて</div>
       <div class="seg-opt ${state.filter === 'draw' ? 'on' : ''}" data-f="draw">引き落とし${drawTotal ? ` (${drawTotal})` : ''}</div>
     </div>`;
@@ -493,11 +555,27 @@
     if (active.length > 1) html += `<div class="drag-hint">長押し → ドラッグで順位を入れ替え</div>`;
     html += active.map((it, i) => cardHTML(it, i + 1, false)).join('');
     if (cands.length) {
-      html += `<div class="divider">これより下は整理対象</div>`;
+      html += `<div class="divider">ここから下は お湯を抜く候補</div>`;
       html += cands.map((it, i) => cardHTML(it, active.length + i + 1, true)).join('');
     }
     list.innerHTML = html;
     if (state.tab === 'flow') renderFlow();
+  }
+
+  function tubHTML(active) {
+    const keepSum = active.reduce((a, x) => a + (Number(x.keep) || 0), 0);
+    const net = active.reduce((a, x) => a + flowNet(x), 0);
+    const hasFlow = active.some((x) => (x.flows || []).length);
+    const bubbles = [12, 30, 52, 71, 88].map((l, i) => `<span class="bubble-up" style="left:${l}%;width:${8 + (i % 3) * 4}px;height:${8 + (i % 3) * 4}px;animation-delay:${-i * 1.3}s"></span>`).join('');
+    return `<div class="tub">
+      <div class="waves"><svg viewBox="0 0 1200 22" preserveAspectRatio="none"><path d="M0 11 Q50 0 100 11 T200 11 T300 11 T400 11 T500 11 T600 11 T700 11 T800 11 T900 11 T1000 11 T1100 11 T1200 11 V22 H0Z" fill="#fff"/></svg></div>
+      ${bubbles}
+      <div class="row">
+        <div><div class="lbl">最低水位の合計</div><div class="amt"><span class="yen">¥</span>${fmtYen(keepSum)}</div></div>
+        ${hasFlow ? `<div class="side"><div class="lbl">毎月の湯量</div><div class="v ${net < 0 ? 'neg' : ''}">${net >= 0 ? '+' : '−'}¥${fmtYen(Math.abs(net))}</div></div>` : ''}
+      </div>
+      <div class="note">${hasFlow ? (net >= 0 ? '給湯のほうが多いので、毎月お湯（お金）がたまっていきます' : '排水のほうが多いので、毎月お湯（お金）がへっていきます') : '湯船ごとに「蛇口と排水」を入れると、毎月の湯量がわかります'}</div>
+    </div>`;
   }
 
   function medalBg(rank, out) {
@@ -505,7 +583,7 @@
     if (rank === 1) return 'linear-gradient(145deg,#e3b94b,#b8860b)';
     if (rank === 2) return 'linear-gradient(145deg,#b9c0c9,#7d8893)';
     if (rank === 3) return 'linear-gradient(145deg,#c08a52,#9a5a28)';
-    return '#475569';
+    return 'linear-gradient(145deg,#c99a62,#9c6f3c)';
   }
 
   function incomeLabel(it) {
@@ -520,27 +598,27 @@
 
   function cardHTML(it, rank, out) {
     const medal = `<span class="rno">${rank}</span><span class="rsuf">位</span>`;
-    const titlePill = (rank === 1 && !out) ? '<span class="title-pill tp-main">主力</span>'
-      : (out ? '<span class="title-pill tp-out">戦力外</span>' : '');
+    const titlePill = (rank === 1 && !out) ? '<span class="title-pill tp-main">一番風呂</span>'
+      : (out ? '<span class="title-pill tp-out">お湯抜き候補</span>' : '');
     const badgeArr = [];
-    if (it.salary) badgeArr.push('<span class="badge inc">⬆ 給与</span>');
-    if (it.bonus) badgeArr.push('<span class="badge bonus">⬆ 賞与</span>');
-    if (it.drawdown) badgeArr.push('<span class="badge draw">⬇ 引き落とし</span>');
+    if (it.salary) badgeArr.push('<span class="badge inc">♨ 給湯：給与</span>');
+    if (it.bonus) badgeArr.push('<span class="badge bonus">♨ 給湯：賞与</span>');
+    if (it.drawdown) badgeArr.push('<span class="badge draw">排水：引き落とし</span>');
     const badges = badgeArr.length ? `<div class="badges">${badgeArr.join('')}</div>` : '';
     const flows = it.flows || [];
     let mflow = '';
     if (flows.length) {
       const net = flowNet(it);
-      mflow = `<div class="mflow"><span class="lbl">毎月の増減</span><span class="net ${net >= 0 ? 'pos' : 'neg'}">${net >= 0 ? '+' : '−'}¥${fmtYen(Math.abs(net))}<span class="per">/月</span></span></div>`;
+      mflow = `<div class="mflow"><span class="lbl">蛇口と排水</span><span class="net ${net >= 0 ? 'pos' : 'neg'}">${net >= 0 ? '+' : '−'}¥${fmtYen(Math.abs(net))}<span class="per">/月</span></span></div>`;
     }
     const mv = moveNet(it.id);
     if (mv.any) {
-      mflow += `<div class="mflow"><span class="lbl">口座間の移動</span><span class="net mv">${mv.net >= 0 ? '+' : '−'}¥${fmtYen(Math.abs(mv.net))}<span class="per">/月</span></span></div>`;
+      mflow += `<div class="mflow"><span class="lbl">ほかの湯船と</span><span class="net mv">${mv.net >= 0 ? '+' : '−'}¥${fmtYen(Math.abs(mv.net))}<span class="per">/月</span></span></div>`;
     }
     return `
       <div class="acct ${out ? 'cand' : ''} ${(rank === 1 && !out) ? 'top1' : ''}" data-id="${it.id}" style="--bc:${esc(it.color)}">
         <div class="acct-row">
-          <div class="medal" style="background:${medalBg(rank, out)}">${(rank === 1 && !out) ? '<span class="crown">👑</span>' : ''}${medal}</div>
+          <div class="medal" style="background:${medalBg(rank, out)}">${(rank === 1 && !out) ? '<span class="crown">♨️</span>' : ''}${medal}</div>
           <div class="mid">
             <div class="bank">${esc(it.bank)}${titlePill}</div>
             ${badges}
@@ -548,7 +626,7 @@
             ${it.memo ? `<div class="memo">${esc(it.memo)}</div>` : ''}
           </div>
           <div class="keep">
-            <div class="klbl">最低キープ</div>
+            <div class="klbl">最低水位</div>
             <div class="kamt"><span class="yen">¥</span>${fmtYen(it.keep)}</div>
           </div>
         </div>
@@ -617,7 +695,7 @@
     selColor = it && it.color ? it.color : COLORS[0];
     renderSwatches();
     renderEditTransfers();
-    $('#editTitle').textContent = id ? '口座を編集' : '口座を追加';
+    $('#editTitle').textContent = id ? '湯船を編集' : '湯船を追加';
     $('#deleteBtn').style.display = id ? 'block' : 'none';
     showView('editView');
     if (!id) setTimeout(() => $('#fBank').focus(), 120);
@@ -835,8 +913,9 @@
     $$('#tabbar button').forEach((b) => b.classList.toggle('on', b.dataset.tab === state.tab));
     $('#list').hidden = state.tab !== 'list';
     $('#flowPane').hidden = state.tab !== 'flow';
-    $('#mainTitle').textContent = state.tab === 'flow' ? 'お金の流れ' : 'マネ風呂';
-    $('#addBtn').setAttribute('aria-label', state.tab === 'flow' ? '流れを追加' : '口座を追加');
+    $('#mainTitle').textContent = state.tab === 'flow' ? 'お湯の流れ' : 'マネ風呂';
+    $('#addBtn').setAttribute('aria-label', state.tab === 'flow' ? '流れを追加' : '湯船を追加');
+    $('#mainTitle').classList.toggle('brand', state.tab !== 'flow');
     if (state.tab === 'flow') renderFlow();
   }
 
@@ -897,7 +976,8 @@
       let d;
       if (y2 > y1) { const dy = Math.max(26, (y2 - y1) * 0.5); d = `M${e.x1} ${y1} C${e.x1} ${y1 + dy}, ${e.x2} ${y2 - dy}, ${e.x2} ${y2 - 2}`; }
       else { const side = Math.max(e.from.x + e.from.w, e.to.x + e.to.w) + 28; d = `M${e.from.x + e.from.w} ${e.from.y + NH / 2} C${side} ${e.from.y + NH / 2}, ${side} ${e.to.y + NH / 2}, ${e.to.x + e.to.w + 2} ${e.to.y + NH / 2}`; }
-      out += `<path class="ed" ${e.id ? `data-tid="${e.id}"` : ''} d="${d}" fill="none" stroke="${esc(e.color)}" stroke-opacity="0.42" stroke-width="${sw.toFixed(1)}" stroke-linecap="round"/>`;
+      out += `<path d="${d}" fill="none" stroke="#cfe3ea" stroke-width="${(sw + 5).toFixed(1)}" stroke-linecap="round"/>`;
+      out += `<path class="ed" ${e.id ? `data-tid="${e.id}"` : ''} d="${d}" fill="none" stroke="${e.kind === 'mv' ? esc(e.color) : e.kind === 'in' ? '#3cc0e0' : '#c98a2b'}" stroke-opacity="${e.kind === 'mv' ? 0.55 : 0.7}" stroke-width="${sw.toFixed(1)}" stroke-linecap="round"/>`;
       out += `<path d="${d}" fill="none" stroke="transparent" stroke-width="1" marker-end="url(#ah)"/>`;
       // 金額は「出ていく箱のすぐ下」に置く（長い矢印でも箱にかからない）。重なったら下へずらす
       const txt = '¥' + fmtYen(e.v), tw = txt.length * 7 + 6;
@@ -910,21 +990,26 @@
     }
     for (const L of layers) for (const n of L) {
       if (n.kind === 'in' || n.kind === 'out') {
-        const isIn = n.kind === 'in', c = isIn ? '#0f9d6b' : '#d97706';
-        out += `<g><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${NH}" rx="14" fill="${isIn ? '#e8f6ef' : '#fdf3e2'}" stroke="${c}" stroke-opacity=".35"/>`;
-        out += `<text x="${n.x + n.w / 2}" y="${n.y + 24}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${c}">${isIn ? '入ってくるお金' : '出ていくお金'}</text>`;
+        const isIn = n.kind === 'in', c = isIn ? '#1b88b3' : '#b0731f';
+        out += `<g><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${NH}" rx="14" fill="${isIn ? '#e3f5fb' : '#fbf1e1'}" stroke="${c}" stroke-opacity=".35"/>`;
+        out += `<text x="${n.x + n.w / 2}" y="${n.y + 24}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${c}">${isIn ? '🚰 蛇口（入ってくる）' : '排水（出ていく）'}</text>`;
         out += `<text x="${n.x + n.w / 2}" y="${n.y + 43}" text-anchor="middle" font-size="13" font-weight="800" fill="#1a1a1a">${isIn ? '+' : '−'}¥${fmtYen(isIn ? g.inTotal : g.outTotal)}<tspan font-size="10" fill="#8e8e93" font-weight="600"> /月</tspan></text></g>`;
         continue;
       }
       const a = n.a, net = sumFlows(a, 'in') - sumFlows(a, 'out') + moveNet(a.id).net;
       const touched = sumFlows(a, 'in') || sumFlows(a, 'out') || moveNet(a.id).any;
       const chars = Math.max(4, Math.floor((n.w - 18) / 13));
-      out += `<g class="nd" data-aid="${a.id}" opacity="${a.candidate ? .6 : 1}"><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${NH}" rx="12" fill="#fff" stroke="#d1d5db"/>`;
-      out += `<rect x="${n.x}" y="${n.y + 8}" width="4" height="${NH - 16}" rx="2" fill="${esc(a.color || '#999')}"/>`;
+      const x0 = n.x, x1 = n.x + n.w, y0 = n.y + 6, y1 = n.y + NH, r = Math.min(20, n.w / 5);
+      const tubPath = `M${x0} ${y0} H${x1} V${y1 - r} Q${x1} ${y1} ${x1 - r} ${y1} H${x0 + r} Q${x0} ${y1} ${x0} ${y1 - r} Z`;
+      const wl = y0 + (NH - 6) * (touched ? (net > 0 ? 0.42 : net < 0 ? 0.72 : 0.55) : 0.62);
+      out += `<g class="nd" data-aid="${a.id}" opacity="${a.candidate ? .6 : 1}"><path d="${tubPath}" fill="#fff" stroke="#bcd9e3" stroke-width="1.5"/>`;
+      out += `<clipPath id="cp${a.id}"><path d="${tubPath}"/></clipPath><path clip-path="url(#cp${a.id})" d="M${x0} ${wl} Q${x0 + n.w * .25} ${wl - 4} ${x0 + n.w * .5} ${wl} T${x1} ${wl} V${y1} H${x0} Z" fill="${esc(a.color || '#8fd6ea')}" fill-opacity=".14"/>`;
+      out += `<rect x="${x0 - 3}" y="${n.y + 2}" width="${n.w + 6}" height="6" rx="3" fill="#fff" stroke="#bcd9e3" stroke-width="1.2"/>`;
+      out += `<rect x="${n.x + 6}" y="${n.y + 12}" width="4" height="${NH - 24}" rx="2" fill="${esc(a.color || '#999')}"/>`;
       out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 24}" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a1a">${esc(clip(a.bank, chars))}</text>`;
       const narrow = n.w < 132;
-      const subTxt = !touched ? '動きなし' : net === 0 ? (narrow ? '±0' : 'ちょうど ±0') : net > 0 ? `${narrow ? '' : 'あまり '}+¥${fmtYen(net)}` : `${narrow ? '' : 'たりない '}−¥${fmtYen(-net)}`;
-      out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 43}" text-anchor="middle" font-size="11" font-weight="700" fill="${!touched || net === 0 ? '#8e8e93' : net > 0 ? '#0f9d6b' : '#dc2626'}">${subTxt}</text></g>`;
+      const subTxt = !touched ? '動きなし' : net === 0 ? (narrow ? '±0' : 'ちょうど ±0') : net > 0 ? `${narrow ? '' : 'たまる '}+¥${fmtYen(net)}` : `${narrow ? '' : 'へる '}−¥${fmtYen(-net)}`;
+      out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 43}" text-anchor="middle" font-size="11" font-weight="700" fill="${!touched || net === 0 ? '#8e8e93' : net > 0 ? '#1b88b3' : '#dc2626'}">${subTxt}</text></g>`;
     }
     out += labels.join('') + '</svg>';
     return out;
@@ -932,18 +1017,18 @@
 
   function renderFlow() {
     const pane = $('#flowPane');
-    if (!state.items.length) { pane.innerHTML = `<div class="empty"><div class="big">⇄</div>まず「口座」タブで口座を登録すると、<br>ここで口座どうしのお金の流れを<br>設定できます。</div>`; return; }
+    if (!state.items.length) { pane.innerHTML = `<div class="empty"><div class="big">🛁</div>まず「湯船」タブで口座を登録すると、<br>ここで湯船どうしのお湯（お金）の流れを<br>設定できます。</div>`; return; }
     const g = buildGraph();
     let html = `<div class="flow-sum">
-      <div class="fs in"><div class="l">入ってくる</div><div class="v">¥${fmtYen(g.inTotal)}</div></div>
-      <div class="fs mv"><div class="l">口座どうし</div><div class="v">¥${fmtYen(g.moveTotal)}</div></div>
-      <div class="fs out"><div class="l">出ていく</div><div class="v">¥${fmtYen(g.outTotal)}</div></div>
+      <div class="fs in"><div class="l">🚰 給湯</div><div class="v">¥${fmtYen(g.inTotal)}</div></div>
+      <div class="fs mv"><div class="l">湯船どうし</div><div class="v">¥${fmtYen(g.moveTotal)}</div></div>
+      <div class="fs out"><div class="l">排水</div><div class="v">¥${fmtYen(g.outTotal)}</div></div>
     </div>`;
-    html += `<button class="flow-add" id="flowAddBig"><span class="plus">＋</span>口座どうしの流れを追加</button>`;
+    html += `<button class="flow-add" id="flowAddBig"><span class="plus">＋</span>湯船どうしの流れを追加</button>`;
     html += `<div class="diagram" id="diagram"></div>`;
-    html += `<div class="dg-hint">ひと月あたりの金額です。矢印の太さは金額の大きさ。<br>入ってくる・出ていくは、各口座の「毎月の増減」から。口座をタップで編集、矢印・金額をタップで流れを編集。</div>`;
-    html += `<div class="sec-row"><div class="sec-label">口座どうしの流れ（${g.tr.length}件）</div><button class="mini-add" id="flowAddMini">＋ 追加</button></div>`;
-    if (!g.tr.length) html += `<div class="empty-sm">まだ流れがありません。<br>上の「＋ 口座どうしの流れを追加」から、<br>どの口座から、どの口座へ、いくら移すかを登録できます。</div>`;
+    html += `<div class="dg-hint">ひと月あたりの金額です。管の太さは金額の大きさ。<br>給湯・排水は、各湯船の「蛇口と排水」から。湯船をタップで編集、管・金額をタップで流れを編集。</div>`;
+    html += `<div class="sec-row"><div class="sec-label">湯船どうしの流れ（${g.tr.length}件）</div><button class="mini-add" id="flowAddMini">＋ 追加</button></div>`;
+    if (!g.tr.length) html += `<div class="empty-sm">まだ流れがありません。<br>上の「＋ 湯船どうしの流れを追加」から、<br>どの湯船から、どの湯船へ、いくら移すかを登録できます。</div>`;
     else html += g.tr.slice().sort((p, q) => perMonth(q) - perMonth(p)).map((t) => {
       const f = acctById(t.from), to = acctById(t.to), cnt = Number(t.count) || 1;
       return `<div class="tr-card" data-tid="${t.id}">
@@ -960,8 +1045,8 @@
   // 口座の編集画面の「口座どうしの流れ」
   function renderEditTransfers() {
     const list = $('#edTransferList'), add = $('#edAddTransfer'), hint = $('#edTransferHint');
-    if (!editingId) { list.innerHTML = ''; add.style.display = 'none'; hint.textContent = '口座を保存すると、ここでほかの口座への流れを設定できます。'; return; }
-    add.style.display = ''; hint.textContent = 'ほかの口座へ移すお金（振り込み・定額自動入金など）を登録すると、「お金の流れ」タブで図になります。';
+    if (!editingId) { list.innerHTML = ''; add.style.display = 'none'; hint.textContent = '湯船を保存すると、ここでほかの湯船への流れを設定できます。'; return; }
+    add.style.display = ''; hint.textContent = 'ほかの湯船へ移すお金（振り込み・定額自動入金など）を登録すると、「お湯の流れ」タブで図になります。';
     const rel = state.transfers.filter((t) => (t.from === editingId || t.to === editingId) && acctById(t.from) && acctById(t.to));
     list.innerHTML = rel.map((t) => {
       const out = t.from === editingId, other = acctById(out ? t.to : t.from);
@@ -974,11 +1059,11 @@
   let editingTid = null, transferFromEdit = false;
   function fillSelect(sel, value) {
     const opts = state.items.slice().sort((a, b) => (a.candidate ? 1 : 0) - (b.candidate ? 1 : 0) || byOrder(a, b));
-    sel.innerHTML = opts.map((a) => `<option value="${a.id}">${esc(a.bank)}${a.branch ? '（' + esc(a.branch) + '）' : ''}${a.candidate ? '・戦力外' : ''}</option>`).join('');
+    sel.innerHTML = opts.map((a) => `<option value="${a.id}">${esc(a.bank)}${a.branch ? '（' + esc(a.branch) + '）' : ''}${a.candidate ? '・お湯抜き候補' : ''}</option>`).join('');
     if (value) sel.value = value;
   }
   function openTransfer(id, preset = {}) {
-    if (state.items.length < 2) { toast('口座が2つ以上あると、流れを設定できます'); return; }
+    if (state.items.length < 2) { toast('湯船が2つ以上あると、流れを設定できます'); return; }
     editingTid = id || null;
     const t = id ? state.transfers.find((x) => x.id === id) : null;
     const act = state.items.filter((x) => !x.candidate).sort(byOrder);
@@ -997,7 +1082,7 @@
     const amount = parseYen($('#tAmt').value);
     const count = Math.max(1, Math.min(31, parseInt(String($('#tCnt').value).replace(/[^\d]/g, ''), 10) || 1));
     const name = $('#tName').value.trim();
-    if (from === to) { toast('出す口座と入る口座は別にしてください'); return; }
+    if (from === to) { toast('出す湯船と入る湯船は別にしてください'); return; }
     if (!amount) { toast('金額を入れてください'); $('#tAmt').focus(); return; }
     const now = Date.now();
     let t = editingTid ? state.transfers.find((x) => x.id === editingTid) : null;
