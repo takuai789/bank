@@ -499,11 +499,11 @@
     <div class="form">
       <div class="set-group">
         <div class="set-row" id="exportBtn">
-          <div><div>バックアップを書き出す</div><div class="sub" id="bkSub">全口座と口座間の流れをJSONファイルに保存</div></div>
+          <div><div>データを書き出す（バックアップ）</div><div class="sub" id="bkSub">全口座と口座間の流れをJSONファイルに保存</div></div>
           <span class="chev">›</span>
         </div>
         <div class="set-row" id="importBtn">
-          <div><div>バックアップを取り込む</div><div class="sub">JSONから復元（新しい方を優先してマージ）</div></div>
+          <div><div>データを取り込む</div><div class="sub">JSONから復元（新しい方を優先してマージ）</div></div>
           <span class="chev">›</span>
         </div>
       </div>
@@ -549,7 +549,7 @@
   function del(store, id) { return new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   // ---------- バージョン ----------
-  const APP_VERSION = '1.11.0';
+  const APP_VERSION = '1.12.0';
   function renderVersionLabel() { const el = $('#versionLabel'); if (el) el.textContent = 'v' + APP_VERSION; }
 
   // ---------- State ----------
