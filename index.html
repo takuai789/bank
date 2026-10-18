@@ -206,6 +206,18 @@
   .tr-card .nm { font-size:12px; color:var(--secondary); font-weight:400; margin-top:2px; }
   .tr-card .amt { font-size:15px; font-weight:800; color:var(--navy); white-space:nowrap; font-variant-numeric:tabular-nums; text-align:right; }
   .tr-card .amt .per { display:block; font-size:10.5px; color:var(--secondary); font-weight:600; }
+  .flow-add { width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:15px; border:0; border-radius:14px; background:var(--navy); color:#fff; font-size:16px; font-weight:700; font-family:inherit; cursor:pointer; margin-bottom:12px; box-shadow:0 6px 16px -8px rgba(30,41,59,.6); }
+  .flow-add .plus { font-size:22px; line-height:1; font-weight:500; }
+  .sec-row { display:flex; align-items:center; justify-content:space-between; margin:18px 4px 8px; }
+  .sec-row .sec-label { margin:0; }
+  .sec-row .mini-add { font-size:13px; font-weight:700; color:var(--blue); background:none; border:0; font-family:inherit; cursor:pointer; padding:4px 2px; }
+  .ed-tr { background:#fff; border-radius:12px; padding:11px 13px; box-shadow:0 1px 2px rgba(0,0,0,.05); margin-bottom:8px; display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; }
+  .ed-tr .lbl { flex:1; min-width:0; font-weight:600; }
+  .ed-tr .lbl small { display:block; font-size:11.5px; color:var(--secondary); font-weight:400; margin-top:1px; }
+  .ed-tr .v { font-weight:800; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .ed-tr .v.in { color:var(--green); } .ed-tr .v.out { color:var(--amber); }
+  .ed-tr .chev { color:var(--tertiary); }
+  .addline.mv { color:var(--blue); }
   .mflow + .mflow { margin-top:0; padding-top:6px; border-top:0; }
   .mflow .net.mv { color:var(--navy); }
   select.input { -webkit-appearance:none; appearance:none; background-image:linear-gradient(45deg,transparent 50%,#8e8e93 50%),linear-gradient(135deg,#8e8e93 50%,transparent 50%); background-position:calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size:5px 5px; background-repeat:no-repeat; padding-right:36px; }
@@ -332,6 +344,12 @@
         <div class="addline" id="addFlow">＋ 項目を追加</div>
         <div class="form-hint">「入／出」を選び、金額と月の回数を入力。名前は空でもOK（例：¥10,000 × 2回）。カードには差引だけ表示され、内訳はこの画面で見られます。</div>
       </div>
+      <div class="field" id="edTransferField">
+        <label>口座どうしの流れ</label>
+        <div id="edTransferList"></div>
+        <div class="addline mv" id="edAddTransfer">＋ この口座から移す流れを追加</div>
+        <div class="form-hint" id="edTransferHint">ほかの口座へ移すお金（振り込み・定額自動入金など）を登録すると、「お金の流れ」タブで図になります。</div>
+      </div>
       <div class="field">
         <label>フラグ</label>
         <div class="togglerow" id="toggleDraw">
@@ -416,7 +434,7 @@
   function del(store, id) { return new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   // ---------- バージョン ----------
-  const APP_VERSION = '1.5.0';
+  const APP_VERSION = '1.5.1';
   function renderVersionLabel() { const el = $('#versionLabel'); if (el) el.textContent = 'v' + APP_VERSION; }
 
   // ---------- State ----------
@@ -598,6 +616,7 @@
     renderFlowRows();
     selColor = it && it.color ? it.color : COLORS[0];
     renderSwatches();
+    renderEditTransfers();
     $('#editTitle').textContent = id ? '口座を編集' : '口座を追加';
     $('#deleteBtn').style.display = id ? 'block' : 'none';
     showView('editView');
@@ -903,7 +922,8 @@
       out += `<g class="nd" data-aid="${a.id}" opacity="${a.candidate ? .6 : 1}"><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${NH}" rx="12" fill="#fff" stroke="#d1d5db"/>`;
       out += `<rect x="${n.x}" y="${n.y + 8}" width="4" height="${NH - 16}" rx="2" fill="${esc(a.color || '#999')}"/>`;
       out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 24}" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a1a">${esc(clip(a.bank, chars))}</text>`;
-      const subTxt = !touched ? '動きなし' : net === 0 ? 'ちょうど ±0' : net > 0 ? `あまり +¥${fmtYen(net)}` : `たりない −¥${fmtYen(-net)}`;
+      const narrow = n.w < 132;
+      const subTxt = !touched ? '動きなし' : net === 0 ? (narrow ? '±0' : 'ちょうど ±0') : net > 0 ? `${narrow ? '' : 'あまり '}+¥${fmtYen(net)}` : `${narrow ? '' : 'たりない '}−¥${fmtYen(-net)}`;
       out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 43}" text-anchor="middle" font-size="11" font-weight="700" fill="${!touched || net === 0 ? '#8e8e93' : net > 0 ? '#0f9d6b' : '#dc2626'}">${subTxt}</text></g>`;
     }
     out += labels.join('') + '</svg>';
@@ -919,10 +939,11 @@
       <div class="fs mv"><div class="l">口座どうし</div><div class="v">¥${fmtYen(g.moveTotal)}</div></div>
       <div class="fs out"><div class="l">出ていく</div><div class="v">¥${fmtYen(g.outTotal)}</div></div>
     </div>`;
+    html += `<button class="flow-add" id="flowAddBig"><span class="plus">＋</span>口座どうしの流れを追加</button>`;
     html += `<div class="diagram" id="diagram"></div>`;
     html += `<div class="dg-hint">ひと月あたりの金額です。矢印の太さは金額の大きさ。<br>入ってくる・出ていくは、各口座の「毎月の増減」から。口座をタップで編集、矢印・金額をタップで流れを編集。</div>`;
-    html += `<div class="sec-label">口座どうしの流れ</div>`;
-    if (!g.tr.length) html += `<div class="empty-sm">まだ流れがありません。<br>右下の ＋ から「どの口座から、どの口座へ、いくら」を追加できます。</div>`;
+    html += `<div class="sec-row"><div class="sec-label">口座どうしの流れ（${g.tr.length}件）</div><button class="mini-add" id="flowAddMini">＋ 追加</button></div>`;
+    if (!g.tr.length) html += `<div class="empty-sm">まだ流れがありません。<br>上の「＋ 口座どうしの流れを追加」から、<br>どの口座から、どの口座へ、いくら移すかを登録できます。</div>`;
     else html += g.tr.slice().sort((p, q) => perMonth(q) - perMonth(p)).map((t) => {
       const f = acctById(t.from), to = acctById(t.to), cnt = Number(t.count) || 1;
       return `<div class="tr-card" data-tid="${t.id}">
@@ -936,8 +957,21 @@
     box.innerHTML = diagramSVG(g, Math.max(300, box.clientWidth || pane.clientWidth - 32));
   }
 
+  // 口座の編集画面の「口座どうしの流れ」
+  function renderEditTransfers() {
+    const list = $('#edTransferList'), add = $('#edAddTransfer'), hint = $('#edTransferHint');
+    if (!editingId) { list.innerHTML = ''; add.style.display = 'none'; hint.textContent = '口座を保存すると、ここでほかの口座への流れを設定できます。'; return; }
+    add.style.display = ''; hint.textContent = 'ほかの口座へ移すお金（振り込み・定額自動入金など）を登録すると、「お金の流れ」タブで図になります。';
+    const rel = state.transfers.filter((t) => (t.from === editingId || t.to === editingId) && acctById(t.from) && acctById(t.to));
+    list.innerHTML = rel.map((t) => {
+      const out = t.from === editingId, other = acctById(out ? t.to : t.from);
+      return `<div class="ed-tr" data-tid="${t.id}"><div class="lbl">${out ? '→ ' + esc(other.bank) + ' へ' : '← ' + esc(other.bank) + ' から'}${t.name ? `<small>${esc(t.name)}</small>` : ''}</div>
+        <span class="v ${out ? 'out' : 'in'}">${out ? '−' : '+'}¥${fmtYen(perMonth(t))}</span><span class="chev">›</span></div>`;
+    }).join('');
+  }
+
   // 流れの 追加・編集
-  let editingTid = null;
+  let editingTid = null, transferFromEdit = false;
   function fillSelect(sel, value) {
     const opts = state.items.slice().sort((a, b) => (a.candidate ? 1 : 0) - (b.candidate ? 1 : 0) || byOrder(a, b));
     sel.innerHTML = opts.map((a) => `<option value="${a.id}">${esc(a.bank)}${a.branch ? '（' + esc(a.branch) + '）' : ''}${a.candidate ? '・戦力外' : ''}</option>`).join('');
@@ -970,7 +1004,9 @@
     if (t) Object.assign(t, { from, to, amount, count, name, updatedAt: now });
     else { t = { id: uid(), from, to, amount, count, name, createdAt: now, updatedAt: now }; state.transfers.push(t); }
     await put('transfers', t);
-    await loadAll(); renderApp(); showView('mainView'); setTab('flow');
+    await loadAll(); renderApp();
+    if (transferFromEdit) { transferFromEdit = false; renderEditTransfers(); showView('editView'); }
+    else { showView('mainView'); setTab('flow'); }
     toast(editingTid ? '保存しました' : '流れを追加しました');
   }
   async function deleteTransfer() {
@@ -979,19 +1015,24 @@
     const f = t && acctById(t.from), to = t && acctById(t.to);
     if (!(await askConfirm(`${f ? esc(f.bank) : ''} → ${to ? esc(to.bank) : ''} の流れを削除しますか？`))) return;
     await del('transfers', editingTid);
-    await loadAll(); renderApp(); showView('mainView'); setTab('flow');
+    await loadAll(); renderApp();
+    if (transferFromEdit) { transferFromEdit = false; renderEditTransfers(); showView('editView'); }
+    else { showView('mainView'); setTab('flow'); }
     toast('削除しました');
   }
   let lastFlowW = 0;
   function bindFlow() {
     $('#tabbar').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
-    $('#cancelTransfer').addEventListener('click', () => showView('mainView'));
+    $('#cancelTransfer').addEventListener('click', () => { if (transferFromEdit) { transferFromEdit = false; showView('editView'); } else showView('mainView'); });
+    $('#edAddTransfer').addEventListener('click', () => { if (!editingId) return; transferFromEdit = true; openTransfer(null, { from: editingId }); });
+    $('#edTransferList').addEventListener('click', (e) => { const r = e.target.closest('[data-tid]'); if (r) { transferFromEdit = true; openTransfer(r.dataset.tid); } });
     $('#saveTransfer').addEventListener('click', saveTransfer);
     $('#saveTransfer2').addEventListener('click', saveTransfer);
     $('#deleteTransfer').addEventListener('click', deleteTransfer);
     $('#tAmt').addEventListener('input', (e) => { const n = parseYen(e.target.value); e.target.value = n ? fmtYen(n) : ''; });
     $('#tFrom').addEventListener('change', () => { if ($('#tFrom').value === $('#tTo').value) { const o = state.items.find((x) => x.id !== $('#tFrom').value); if (o) $('#tTo').value = o.id; } });
     $('#flowPane').addEventListener('click', (e) => {
+      if (e.target.closest('#flowAddBig, #flowAddMini')) { openTransfer(null); return; }
       const tEl = e.target.closest('[data-tid]'); if (tEl) { openTransfer(tEl.getAttribute('data-tid')); return; }
       const aEl = e.target.closest('[data-aid]'); if (aEl) openEdit(aEl.getAttribute('data-aid'));
     });
