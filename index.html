@@ -507,7 +507,7 @@
   function del(store, id) { return new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   // ---------- バージョン ----------
-  const APP_VERSION = '1.8.0';
+  const APP_VERSION = '1.9.0';
   function renderVersionLabel() { const el = $('#versionLabel'); if (el) el.textContent = 'v' + APP_VERSION; }
 
   // ---------- State ----------
@@ -952,80 +952,98 @@
   function clip(str, max) { const a = Array.from(String(str)); return a.length > max ? a.slice(0, max - 1).join('') + '…' : a.join(''); }
 
   function diagramSVG(g, width) {
-    const PAD = 14, NH = 58, VGAP = 70, HGAP = 12, MINW = 92;
-    const layers = [];
-    if (g.inTotal > 0) layers.push([{ kind: 'in' }]);
-    const maxD = g.accts.reduce((m, a) => Math.max(m, g.depth[a.id]), 0);
-    for (let d = 0; d <= maxD; d++) { const L = g.accts.filter((a) => g.depth[a.id] === d).map((a) => ({ kind: 'acct', a })); if (L.length) layers.push(L); }
-    if (g.outTotal > 0) layers.push([{ kind: 'out' }]);
-    const widest = layers.reduce((m, L) => Math.max(m, L.length), 1);
-    const W = Math.max(width, PAD * 2 + widest * MINW + (widest - 1) * HGAP);
-    const pos = {};
-    layers.forEach((L, li) => {
-      const y = PAD + li * (NH + VGAP);
-      if (L[0].kind !== 'acct') { const w = Math.min(W - PAD * 2, 220); L[0].x = (W - w) / 2; L[0].y = y; L[0].w = w; pos[L[0].kind] = L[0]; return; }
-      const w = Math.min(160, (W - PAD * 2 - (L.length - 1) * HGAP) / L.length);
-      const total = L.length * w + (L.length - 1) * HGAP, x0 = (W - total) / 2;
-      L.forEach((n, i) => { n.x = x0 + i * (w + HGAP); n.y = y; n.w = w; pos[n.a.id] = n; });
-    });
-    const H = PAD * 2 + layers.length * NH + (layers.length - 1) * VGAP;
-    const edges = [];
-    for (const a of g.accts) { const v = sumFlows(a, 'in'); if (v > 0 && pos.in) edges.push({ from: pos.in, to: pos[a.id], v, color: '#0f9d6b', kind: 'in' }); }
-    for (const t of g.tr) if (pos[t.from] && pos[t.to]) edges.push({ from: pos[t.from], to: pos[t.to], v: perMonth(t), color: acctById(t.from).color || '#475569', kind: 'mv', id: t.id });
-    for (const a of g.accts) { const v = sumFlows(a, 'out'); if (v > 0 && pos.out) edges.push({ from: pos[a.id], to: pos.out, v, color: '#d97706', kind: 'out' }); }
-    const maxV = edges.reduce((m, e) => Math.max(m, e.v), 1);
-    // 出口・入口の位置を、同じ箱から出る線どうしで ずらす
-    const outs = new Map(), ins = new Map();
-    edges.forEach((e) => { (outs.get(e.from) || outs.set(e.from, []).get(e.from)).push(e); (ins.get(e.to) || ins.set(e.to, []).get(e.to)).push(e); });
-    const cxOf = (n) => n.x + n.w / 2;
-    outs.forEach((list, n) => { list.sort((p, q) => cxOf(p.to) - cxOf(q.to)); list.forEach((e, i) => { e.x1 = n.x + n.w * (i + 1) / (list.length + 1); }); });
-    ins.forEach((list, n) => { list.sort((p, q) => cxOf(p.from) - cxOf(q.from)); list.forEach((e, i) => { e.x2 = n.x + n.w * (i + 1) / (list.length + 1); }); });
-    let out = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', -apple-system, sans-serif">`;
-    out += `<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker></defs>`;
-    const labels = [], placed = [];
-    for (const e of edges) {
-      const y1 = e.from.y + NH, y2 = e.to.y;
-      const sw = 2 + 9 * (e.v / maxV);
-      let d;
-      if (y2 > y1) { const dy = Math.max(26, (y2 - y1) * 0.5); d = `M${e.x1} ${y1} C${e.x1} ${y1 + dy}, ${e.x2} ${y2 - dy}, ${e.x2} ${y2 - 2}`; }
-      else { const side = Math.max(e.from.x + e.from.w, e.to.x + e.to.w) + 28; d = `M${e.from.x + e.from.w} ${e.from.y + NH / 2} C${side} ${e.from.y + NH / 2}, ${side} ${e.to.y + NH / 2}, ${e.to.x + e.to.w + 2} ${e.to.y + NH / 2}`; }
-      out += `<path d="${d}" fill="none" stroke="#cfe3ea" stroke-width="${(sw + 5).toFixed(1)}" stroke-linecap="round"/>`;
-      out += `<path class="ed" ${e.id ? `data-tid="${e.id}"` : ''} d="${d}" fill="none" stroke="${e.kind === 'mv' ? esc(e.color) : e.kind === 'in' ? '#3cc0e0' : '#c98a2b'}" stroke-opacity="${e.kind === 'mv' ? 0.55 : 0.7}" stroke-width="${sw.toFixed(1)}" stroke-linecap="round"/>`;
-      out += `<path d="${d}" fill="none" stroke="transparent" stroke-width="1" marker-end="url(#ah)"/>`;
-      // 金額は「出ていく箱のすぐ下」に置く（長い矢印でも箱にかからない）。重なったら下へずらす
-      const txt = '¥' + fmtYen(e.v), tw = txt.length * 7 + 6;
-      let mx = y2 > y1 ? e.x1 + (e.x2 - e.x1) * 0.18 : Math.max(e.from.x + e.from.w, e.to.x + e.to.w) + 20;
-      mx = Math.min(W - tw / 2 - 2, Math.max(tw / 2 + 2, mx));
-      let my = y2 > y1 ? y1 + Math.min(VGAP * 0.42, (y2 - y1) * 0.45) : (e.from.y + e.to.y) / 2 + NH / 2;
-      for (let k = 0; k < 6 && placed.some((b) => Math.abs(b.x - mx) < (b.w + tw) / 2 && Math.abs(b.y - my) < 15); k++) my += 15;
-      placed.push({ x: mx, y: my, w: tw });
-      labels.push(`<text ${e.id ? `class="ed" data-tid="${e.id}"` : ''} x="${mx.toFixed(1)}" y="${(my + 4).toFixed(1)}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e293b" stroke="#fff" stroke-width="4" paint-order="stroke" stroke-linejoin="round">${txt}</text>`);
+    // わかりやすさ優先：1本の流れを1行で「左の湯船 → 右の湯船」と描く（向きは必ず左から右）
+    const W = Math.max(320, width), PAD = 14, BH = 44;
+    const BW = Math.min(132, Math.round((W - PAD * 2) * 0.31));
+    const xL = PAD, xR = W - PAD - BW, pipeX1 = xL + BW + 6, pipeX2 = xR - 6, pipeMid = (pipeX1 + pipeX2) / 2;
+    const chars = Math.max(4, Math.floor((BW - 22) / 12.5));
+    const ord = (id) => g.accts.findIndex((a) => a.id === id);
+    const rows = [];
+    const ins = g.accts.filter((a) => sumFlows(a, 'in') > 0).map((a) => ({ kind: 'in', a, v: sumFlows(a, 'in') }));
+    const outs = g.accts.filter((a) => sumFlows(a, 'out') > 0).map((a) => ({ kind: 'out', a, v: sumFlows(a, 'out') }));
+    // 湯船どうし：同じ2つの湯船のあいだの流れはまとめて並べる
+    const groups = new Map();
+    for (const t of g.tr) {
+      const k = [t.from, t.to].sort((p, q) => ord(p) - ord(q)).join('|');
+      (groups.get(k) || groups.set(k, []).get(k)).push(t);
     }
-    for (const L of layers) for (const n of L) {
-      if (n.kind === 'in' || n.kind === 'out') {
-        const isIn = n.kind === 'in', c = isIn ? '#1b88b3' : '#b0731f';
-        out += `<g><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${NH}" rx="14" fill="${isIn ? '#e3f5fb' : '#fbf1e1'}" stroke="${c}" stroke-opacity=".35"/>`;
-        out += `<text x="${n.x + n.w / 2}" y="${n.y + 24}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${c}">${isIn ? '🚰 蛇口（入ってくる）' : '排水（出ていく）'}</text>`;
-        out += `<text x="${n.x + n.w / 2}" y="${n.y + 43}" text-anchor="middle" font-size="13" font-weight="800" fill="#1a1a1a">${isIn ? '+' : '−'}¥${fmtYen(isIn ? g.inTotal : g.outTotal)}<tspan font-size="10" fill="#8e8e93" font-weight="600"> /月</tspan></text></g>`;
-        continue;
+    const gl = [...groups.values()].sort((p, q) => Math.min(ord(p[0].from), ord(p[0].to)) - Math.min(ord(q[0].from), ord(q[0].to)) || Math.max(ord(p[0].from), ord(p[0].to)) - Math.max(ord(q[0].from), ord(q[0].to)));
+    const maxV = Math.max(1, ...ins.map((r) => r.v), ...outs.map((r) => r.v), ...g.tr.map(perMonth));
+    let y = PAD, out = '';
+    const head = (t, sub) => { out += `<text x="${PAD + 2}" y="${y + 13}" font-size="12.5" font-weight="800" fill="#0e4a63">${t}</text>`; if (sub) out += `<text x="${W - PAD - 2}" y="${y + 13}" text-anchor="end" font-size="10.5" font-weight="600" fill="#8e8e93">${sub}</text>`; y += 24; };
+    const box = (x, by, kind, a) => {
+      if (kind === 'in' || kind === 'out') {
+        const isIn = kind === 'in', c = isIn ? '#1b88b3' : '#b0731f';
+        out += `<rect x="${x}" y="${by}" width="${BW}" height="${BH}" rx="12" fill="${isIn ? '#e3f5fb' : '#fbf1e1'}" stroke="${c}" stroke-opacity=".35"/>`;
+        out += `<text x="${x + BW / 2}" y="${by + 27}" text-anchor="middle" font-size="13" font-weight="800" fill="${c}">${isIn ? '🚰 蛇口' : '排水'}</text>`;
+        return;
       }
-      const a = n.a, net = sumFlows(a, 'in') - sumFlows(a, 'out') + moveNet(a.id).net;
-      const touched = sumFlows(a, 'in') || sumFlows(a, 'out') || moveNet(a.id).any;
-      const chars = Math.max(4, Math.floor((n.w - 18) / 13));
-      const x0 = n.x, x1 = n.x + n.w, y0 = n.y + 6, y1 = n.y + NH, r = Math.min(20, n.w / 5);
-      const tubPath = `M${x0} ${y0} H${x1} V${y1 - r} Q${x1} ${y1} ${x1 - r} ${y1} H${x0 + r} Q${x0} ${y1} ${x0} ${y1 - r} Z`;
-      const wl = y0 + (NH - 6) * (touched ? (net > 0 ? 0.42 : net < 0 ? 0.72 : 0.55) : 0.62);
-      out += `<g class="nd" data-aid="${a.id}" opacity="${a.candidate ? .6 : 1}"><path d="${tubPath}" fill="#fff" stroke="#bcd9e3" stroke-width="1.5"/>`;
-      out += `<clipPath id="cp${a.id}"><path d="${tubPath}"/></clipPath><path clip-path="url(#cp${a.id})" d="M${x0} ${wl} Q${x0 + n.w * .25} ${wl - 4} ${x0 + n.w * .5} ${wl} T${x1} ${wl} V${y1} H${x0} Z" fill="${esc(a.color || '#8fd6ea')}" fill-opacity=".14"/>`;
-      out += `<rect x="${x0 - 3}" y="${n.y + 2}" width="${n.w + 6}" height="6" rx="3" fill="#fff" stroke="#bcd9e3" stroke-width="1.2"/>`;
-      out += `<rect x="${n.x + 6}" y="${n.y + 12}" width="4" height="${NH - 24}" rx="2" fill="${esc(a.color || '#999')}"/>`;
-      out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 24}" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a1a">${esc(clip(a.bank, chars))}</text>`;
-      const narrow = n.w < 132;
-      const subTxt = !touched ? '動きなし' : net === 0 ? (narrow ? '±0' : 'ちょうど ±0') : net > 0 ? `${narrow ? '' : 'たまる '}+¥${fmtYen(net)}` : `${narrow ? '' : 'へる '}−¥${fmtYen(-net)}`;
-      out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 43}" text-anchor="middle" font-size="11" font-weight="700" fill="${!touched || net === 0 ? '#8e8e93' : net > 0 ? '#1b88b3' : '#dc2626'}">${subTxt}</text></g>`;
+      out += `<rect x="${x}" y="${by}" width="${BW}" height="${BH}" rx="12" fill="#fff" stroke="#bcd9e3" stroke-width="1.5"/>`;
+      out += `<rect x="${x + 7}" y="${by + 10}" width="4" height="${BH - 20}" rx="2" fill="${esc(a.color || '#999')}"/>`;
+      // 長い名前は字を小さくして、なるべく省略せずに出す
+      const len = Array.from(String(a.bank)).length, fs = Math.max(10, Math.min(12.5, (BW - 24) / Math.max(1, len)));
+      out += `<text x="${x + BW / 2 + 4}" y="${by + 27}" text-anchor="middle" font-size="${fs.toFixed(1)}" font-weight="700" fill="#1a1a1a">${esc(clip(a.bank, Math.max(chars, Math.floor((BW - 24) / 10))))}</text>`;
+    };
+    const row = (from, to, v, color, sub, attr) => {
+      const RH = BH + 16, by = y + 4, my = by + BH / 2;
+      out += `<g ${attr}><rect x="${PAD - 4}" y="${y}" width="${W - PAD * 2 + 8}" height="${RH - 4}" rx="14" fill="#f3f9fb"/>`;
+      box(xL, by, from.kind, from.a); box(xR, by, to.kind, to.a);
+      const sw = 4 + 8 * (v / maxV), ah = Math.max(9, sw + 4);
+      out += `<path d="M${pipeX1} ${my} H${pipeX2 - ah}" stroke="#cfe3ea" stroke-width="${(sw + 5).toFixed(1)}" stroke-linecap="round"/>`;
+      out += `<path d="M${pipeX1} ${my} H${pipeX2 - ah + 1}" stroke="${esc(color)}" stroke-width="${sw.toFixed(1)}" stroke-linecap="round"/>`;
+      out += `<path d="M${pipeX2 - ah - 2} ${my - ah} L${pipeX2} ${my} L${pipeX2 - ah - 2} ${my + ah} Z" fill="${esc(color)}" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>`;
+      out += `<text x="${pipeMid}" y="${my - sw / 2 - 6}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#0e4a63" stroke="#f3f9fb" stroke-width="4" paint-order="stroke" stroke-linejoin="round">¥${fmtYen(v)}</text>`;
+      if (sub) out += `<text x="${pipeMid}" y="${my + sw / 2 + 15}" text-anchor="middle" font-size="10" font-weight="600" fill="#7b8f98">${esc(clip(sub, Math.floor((pipeX2 - pipeX1) / 10)))}</text>`;
+      out += `</g>`;
+      y += RH;
+    };
+    if (ins.length) {
+      head('🚰 入ってくる', `計 ¥${fmtYen(g.inTotal)}/月`);
+      for (const r of ins) row({ kind: 'in' }, { kind: 'acct', a: r.a }, r.v, '#3cc0e0', '', `class="nd" data-aid="${r.a.id}"`);
+      y += 8;
     }
-    out += labels.join('') + '</svg>';
-    return out;
+    head('湯船どうし', g.tr.length ? `計 ¥${fmtYen(g.moveTotal)}/月` : '');
+    if (!g.tr.length) { out += `<text x="${W / 2}" y="${y + 14}" text-anchor="middle" font-size="11.5" fill="#8e8e93">まだ流れがありません</text>`; y += 30; }
+    for (const grp of gl) {
+      grp.sort((p, q) => perMonth(q) - perMonth(p));
+      for (const t of grp) {
+        const f = acctById(t.from), to = acctById(t.to), cnt = Number(t.count) || 1;
+        const sub = [t.name, cnt > 1 ? `¥${fmtYen(t.amount)}×${cnt}回` : ''].filter(Boolean).join(' ');
+        row({ kind: 'acct', a: f }, { kind: 'acct', a: to }, perMonth(t), f.color || '#475569', sub, `class="ed" data-tid="${t.id}"`);
+      }
+      // 行き来があるときは差し引きも書く
+      const pa = grp[0].from, pb = grp[0].to;
+      if (grp.some((t) => t.from === pb)) {
+        const ab = grp.filter((t) => t.from === pa).reduce((s, t) => s + perMonth(t), 0), ba = grp.filter((t) => t.from === pb).reduce((s, t) => s + perMonth(t), 0);
+        const net = ab - ba, a1 = acctById(net >= 0 ? pa : pb), a2 = acctById(net >= 0 ? pb : pa);
+        out += `<text x="${W / 2}" y="${y + 9}" text-anchor="middle" font-size="11" font-weight="700" fill="#1b88b3">⇄ 差し引き：${net === 0 ? 'ちょうど ±0' : `${esc(clip(a1.bank, 8))} → ${esc(clip(a2.bank, 8))} ¥${fmtYen(Math.abs(net))}`}</text>`;
+        y += 20;
+      }
+    }
+    y += 8;
+    if (outs.length) {
+      head('排水 出ていく', `計 ¥${fmtYen(g.outTotal)}/月`);
+      for (const r of outs) row({ kind: 'acct', a: r.a }, { kind: 'out' }, r.v, '#c98a2b', '', `class="nd" data-aid="${r.a.id}"`);
+      y += 8;
+    }
+    // 湯船ごとに、ひと月でたまるか・へるか
+    head('湯船ごとの増減', 'ひと月あたり');
+    for (const a of g.accts) {
+      const mv = moveNet(a.id), net = sumFlows(a, 'in') - sumFlows(a, 'out') + mv.net;
+      const touched = sumFlows(a, 'in') || sumFlows(a, 'out') || mv.any;
+      const txt = !touched ? '動きなし' : net === 0 ? 'ちょうど ±0' : net > 0 ? `たまる +¥${fmtYen(net)}` : `へる −¥${fmtYen(-net)}`;
+      const col = !touched || net === 0 ? '#8e8e93' : net > 0 ? '#1b88b3' : '#dc2626';
+      const lv = !touched ? .5 : net > 0 ? .78 : net < 0 ? .25 : .5;
+      const bw = W - PAD * 2;
+      out += `<g class="nd" data-aid="${a.id}" opacity="${a.candidate ? .6 : 1}"><rect x="${PAD}" y="${y}" width="${bw}" height="38" rx="11" fill="#fff" stroke="#bcd9e3" stroke-width="1.2"/>`;
+      out += `<rect x="${PAD + 1}" y="${y + 1}" width="${((bw - 2) * lv).toFixed(1)}" height="36" rx="10" fill="${esc(a.color || '#8fd6ea')}" fill-opacity=".12"/>`;
+      out += `<rect x="${PAD + 8}" y="${y + 9}" width="4" height="20" rx="2" fill="${esc(a.color || '#999')}"/>`;
+      out += `<text x="${PAD + 20}" y="${y + 24}" font-size="13" font-weight="700" fill="#1a1a1a">${esc(clip(a.bank, Math.floor((bw - 150) / 13)))}</text>`;
+      out += `<text x="${W - PAD - 10}" y="${y + 24}" text-anchor="end" font-size="12.5" font-weight="800" fill="${col}">${txt}</text></g>`;
+      y += 44;
+    }
+    const H = y + PAD - 6;
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', -apple-system, sans-serif">${out}</svg>`;
   }
 
   function renderFlow() {
@@ -1039,17 +1057,7 @@
     </div>`;
     html += `<button class="flow-add" id="flowAddBig"><span class="plus">＋</span>湯船どうしの流れを追加</button>`;
     html += `<div class="diagram" id="diagram"></div>`;
-    html += `<div class="dg-hint">ひと月あたりの金額です。管の太さは金額の大きさ。<br>給湯・排水は、各湯船の「蛇口と排水」から。湯船をタップで編集、管・金額をタップで流れを編集。</div>`;
-    html += `<div class="sec-row"><div class="sec-label">湯船どうしの流れ（${g.tr.length}件）</div><button class="mini-add" id="flowAddMini">＋ 追加</button></div>`;
-    if (!g.tr.length) html += `<div class="empty-sm">まだ流れがありません。<br>上の「＋ 湯船どうしの流れを追加」から、<br>どの湯船から、どの湯船へ、いくら移すかを登録できます。</div>`;
-    else html += g.tr.slice().sort((p, q) => perMonth(q) - perMonth(p)).map((t) => {
-      const f = acctById(t.from), to = acctById(t.to), cnt = Number(t.count) || 1;
-      return `<div class="tr-card" data-tid="${t.id}">
-        <div class="who"><span class="dot" style="background:${esc(f.color)}"></span>${esc(f.bank)}<span class="arrow">→</span><span class="dot" style="background:${esc(to.color)}"></span>${esc(to.bank)}
-          ${t.name ? `<div class="nm">${esc(t.name)}</div>` : ''}</div>
-        <div class="amt">¥${fmtYen(perMonth(t))}<span class="per">${cnt > 1 ? `¥${fmtYen(t.amount)} × ${cnt}回` : '/月'}</span></div>
-      </div>`;
-    }).join('');
+    html += `<div class="dg-hint">ひと月あたりの金額です。お湯はいつも左から右へ流れます。<br>流れの行をタップで編集、湯船ごとの行をタップで湯船を編集。</div>`;
     pane.innerHTML = html;
     $('#diagram').insertAdjacentHTML('afterend', `<button class="img-btn" id="flowImgBtn">🖼 この流れを画像にする</button>`);
     const box = $('#diagram');
@@ -1154,7 +1162,6 @@
       const dw = +diag.match(/width="([\d.]+)"/)[1], dh = +diag.match(/height="([\d.]+)"/)[1];
       const W = Math.max(400, dw + 40), PAD = 20;
       const d = new Date(), dateTxt = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
-      const trs = g.tr.slice().sort((p, q) => perMonth(q) - perMonth(p));
       let y = PAD;
       let body = '';
       // 見出し
@@ -1174,20 +1181,6 @@
       body += `<rect x="${PAD}" y="${y}" width="${W - PAD * 2}" height="${dh + 20}" rx="16" fill="#fff"/>`;
       body += diag.replace('<svg ', `<svg x="${(W - dw) / 2}" y="${y + 10}" `);
       y += dh + 32;
-      // 一覧
-      if (trs.length) {
-        body += svgText(PAD + 4, y + 14, `湯船どうしの流れ（${trs.length}件）`, 12, 700, '#557483');
-        y += 24;
-        for (const t of trs) {
-          const f = acctById(t.from), to = acctById(t.to), cnt = Number(t.count) || 1;
-          body += `<rect x="${PAD}" y="${y}" width="${W - PAD * 2}" height="${t.name ? 50 : 38}" rx="10" fill="#fff"/>`;
-          body += `<rect x="${PAD + 12}" y="${y + 14}" width="8" height="8" rx="2" fill="${esc(f.color || '#999')}"/>`;
-          body += svgText(PAD + 26, y + 23, `${clip(f.bank, 9)} → ${clip(to.bank, 9)}`, 13.5, 700, '#1a1a1a');
-          body += svgText(W - PAD - 12, y + 23, `¥${fmtYen(perMonth(t))}/月`, 13.5, 800, '#1b88b3', 'end');
-          if (t.name || cnt > 1) body += svgText(PAD + 26, y + 41, [t.name, cnt > 1 ? `¥${fmtYen(t.amount)} × ${cnt}回` : ''].filter(Boolean).join('　'), 11, 500, '#7b8f98');
-          y += (t.name || cnt > 1 ? 50 : 38) + 6;
-        }
-      }
       y += 8;
       body += svgText(W / 2, y + 10, 'ひと月あたりの金額　・　マネ風呂', 10.5, 600, '#8aa3ad', 'middle');
       const H = y + 26;
