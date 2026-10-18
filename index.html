@@ -306,6 +306,35 @@
   .shot .shot-btns button { flex:1; padding:14px; border:0; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; }
   .shot #shotShare { background:linear-gradient(180deg,#2a9cc6,#14739c); color:#fff; }
   .shot #shotClose { background:rgba(255,255,255,.16); color:#fff; }
+  .frow { flex-wrap:wrap; }
+  .frow .f-dayline { flex-basis:100%; display:flex; align-items:center; gap:4px; font-size:12px; color:var(--secondary); padding:2px 0 0 2px; }
+  .frow .f-day { width:34px; border:0; outline:none; font-size:13.5px; text-align:center; font-family:inherit; background:rgba(120,120,128,.1); border-radius:6px; padding:3px 0; color:var(--ink); }
+  #tMode .iopt.sel { background:var(--water-deep); border-color:var(--water-deep); }
+  .tp-warn { background:#fff1e0; color:#c2410c; }
+  .warn-card { background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:11px 14px; margin-bottom:12px; font-size:13px; line-height:1.6; color:#7c2d12; }
+  .warn-card b { color:#c2410c; }
+  .warn-card .wl { display:flex; gap:8px; align-items:flex-start; cursor:pointer; padding:3px 0; }
+  .warn-card .wl + .wl { border-top:1px dashed #fed7aa; }
+  .plan-head { background:#fff; border-radius:16px; padding:14px 16px; margin-bottom:14px; display:flex; align-items:center; gap:12px; }
+  .plan-head .ph-m { font-size:20px; font-weight:800; color:var(--navy); }
+  .plan-head .ph-s { flex:1; font-size:12.5px; color:var(--secondary); line-height:1.5; }
+  .plan-head .ph-p { font-size:13px; font-weight:800; color:var(--water-deep); white-space:nowrap; }
+  .plan-row { display:flex; align-items:center; gap:10px; background:#fff; border-radius:14px; padding:10px 12px; margin-bottom:8px; cursor:pointer; }
+  .plan-row .pd { width:44px; flex-shrink:0; text-align:center; font-weight:800; color:var(--navy); font-size:15px; line-height:1.1; }
+  .plan-row .pd small { display:block; font-size:10px; color:var(--secondary); font-weight:600; }
+  .plan-row .pm { flex:1; min-width:0; font-size:13.5px; font-weight:700; line-height:1.45; }
+  .plan-row .pm .pk { display:inline-block; font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px; margin-right:5px; vertical-align:1px; }
+  .pk.in { background:#e0f5ec; color:#0f7a55; } .pk.mv { background:#e3f2f8; color:#14739c; } .pk.out { background:#fbf1e1; color:#a0621a; }
+  .plan-row .pm small { display:block; font-size:11.5px; color:var(--secondary); font-weight:500; }
+  .plan-row .pv { font-size:14px; font-weight:800; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .plan-row .pck { width:30px; height:30px; flex-shrink:0; border-radius:50%; border:2px solid #bcd9e3; display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff; }
+  .plan-row .pck.on { background:var(--water-deep); border-color:var(--water-deep); }
+  .plan-row .pauto { flex-shrink:0; font-size:10.5px; color:var(--secondary); font-weight:700; width:30px; text-align:center; }
+  .plan-row.done { opacity:.55; }
+  .plan-row.late { box-shadow:0 0 0 1.5px #fdba74 inset; }
+  .plan-row.late .pd { color:#c2410c; }
+  .today-line { display:flex; align-items:center; gap:8px; margin:6px 2px 12px; font-size:11.5px; font-weight:800; color:var(--water-deep); }
+  .today-line::before, .today-line::after { content:''; flex:1; height:1.5px; background:linear-gradient(90deg, transparent, var(--water-deep), transparent); }
   .concept { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 18px; font-size: 13px; line-height: 1.75; color: #345; box-shadow: 0 1px 2px rgba(14,74,99,.08); }
   .concept b { color: var(--water-deep); }
 </style>
@@ -323,6 +352,7 @@
     </div>
     <div class="scroll pane" id="list"></div>
     <div class="scroll pane" id="flowPane" hidden></div>
+    <div class="scroll pane" id="planPane" hidden></div>
     <button class="fab" id="addBtn" aria-label="口座を追加">＋</button>
     <nav class="tabbar" id="tabbar">
       <button data-tab="list" class="on" aria-label="湯船（口座）">
@@ -332,6 +362,10 @@
       <button data-tab="flow" aria-label="お湯の流れ">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="16" width="7" height="5" rx="1.5"/><path d="M6.5 8v3.5a2 2 0 0 0 2 2h7a2 2 0 0 1 2 2V16"/><path d="m15.5 14 2 2 2-2"/></svg>
         お湯の流れ
+      </button>
+      <button data-tab="plan" aria-label="今月の段取り">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="m8.5 15 2.2 2.2 4.8-4.8"/></svg>
+        段取り
       </button>
     </nav>
   </div>
@@ -362,6 +396,14 @@
       <div class="field">
         <label>月に何回</label>
         <div class="cnt-wrap"><input class="input" id="tCnt" type="text" inputmode="numeric" value="1" /><span>回 ／ 月</span></div>
+      </div>
+      <div class="field">
+        <label>毎月 何日ごろ（任意）</label>
+        <div class="cnt-wrap"><input class="input" id="tDay" type="text" inputmode="numeric" placeholder="−" /><span>日 ／ 31は月末</span></div>
+      </div>
+      <div class="field">
+        <label>移し方</label>
+        <div class="seg4" id="tMode"><div class="iopt" data-v="hand">手で移す（チェックする）</div><div class="iopt" data-v="auto">自動</div></div>
       </div>
       <div class="field">
         <label>名前（任意）</label>
@@ -507,12 +549,12 @@
   function del(store, id) { return new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   // ---------- バージョン ----------
-  const APP_VERSION = '1.9.0';
+  const APP_VERSION = '1.10.0';
   function renderVersionLabel() { const el = $('#versionLabel'); if (el) el.textContent = 'v' + APP_VERSION; }
 
   // ---------- State ----------
   const TAB_KEY = 'kouza-deck.tab';
-  let savedTab = 'list'; try { savedTab = localStorage.getItem(TAB_KEY) === 'flow' ? 'flow' : 'list'; } catch (e) {}
+  let savedTab = 'list'; try { savedTab = localStorage.getItem(TAB_KEY); if (!['list', 'flow', 'plan'].includes(savedTab)) savedTab = 'list'; } catch (e) {}
   const state = { items: [], transfers: [], filter: 'all', tab: savedTab };
   let editingId = null;
   let selColor = COLORS[0];
@@ -542,6 +584,7 @@
     if (state.items.length === 0) {
       list.innerHTML = `<div class="empty"><div class="big">🛁</div>まだ湯船がありません。<br>右下の泡（＋）から、よく使う口座を<br>湯船として登録してみましょう。</div>`;
       if (state.tab === 'flow') renderFlow();
+      if (state.tab === 'plan') renderPlan();
       return;
     }
 
@@ -560,6 +603,7 @@
       html += rows.length ? rows.join('') : `<div class="empty-sm">引き落としフラグの口座はありません</div>`;
       list.innerHTML = html;
       if (state.tab === 'flow') renderFlow();
+      if (state.tab === 'plan') renderPlan();
       return;
     }
 
@@ -571,6 +615,7 @@
     }
     list.innerHTML = html;
     if (state.tab === 'flow') renderFlow();
+    if (state.tab === 'plan') renderPlan();
   }
 
   function tubHTML(active) {
@@ -611,6 +656,7 @@
     const medal = `<span class="rno">${rank}</span><span class="rsuf">位</span>`;
     const titlePill = (rank === 1 && !out) ? '<span class="title-pill tp-main">一番風呂</span>'
       : (out ? '<span class="title-pill tp-out">お湯抜き候補</span>' : '');
+    const dry = dryInfo(it) ? '<span class="title-pill tp-warn">空焚き注意</span>' : '';
     const badgeArr = [];
     if (it.salary) badgeArr.push('<span class="badge inc">♨ 給湯：給与</span>');
     if (it.bonus) badgeArr.push('<span class="badge bonus">♨ 給湯：賞与</span>');
@@ -631,7 +677,7 @@
         <div class="acct-row">
           <div class="medal" style="background:${medalBg(rank, out)}">${(rank === 1 && !out) ? '<span class="crown">♨️</span>' : ''}${medal}</div>
           <div class="mid">
-            <div class="bank">${esc(it.bank)}${titlePill}</div>
+            <div class="bank">${esc(it.bank)}${titlePill}${dry}</div>
             ${badges}
             ${it.branch ? `<div class="branch">${esc(it.branch)}</div>` : ''}
             ${it.memo ? `<div class="memo">${esc(it.memo)}</div>` : ''}
@@ -674,6 +720,7 @@
       <span class="unit">円 ×</span>
       <input class="f-cnt" inputmode="numeric" value="${f.count || 1}" />
       <span class="f-del">⊖</span>
+      <div class="f-dayline">毎月 <input class="f-day" inputmode="numeric" value="${f.day || ''}" placeholder="−" /> 日ごろ（任意・31は月末）</div>
     </div>`;
   }
   function renderFlowRows() {
@@ -685,6 +732,7 @@
       name: r.querySelector('.f-name').value.trim(),
       amount: parseYen(r.querySelector('.f-amt').value),
       count: Math.max(1, parseInt(String(r.querySelector('.f-cnt').value).replace(/[^\d]/g, ''), 10) || 1),
+      day: parseDay(r.querySelector('.f-day').value),
     }));
   }
 
@@ -701,7 +749,7 @@
     const sal = !!(it && it.salary), bon = !!(it && it.bonus);
     incomeSel = (sal && bon) ? 'both' : sal ? 'salary' : bon ? 'bonus' : 'none';
     renderIncomeSeg();
-    editFlows = (it && Array.isArray(it.flows)) ? it.flows.map((f) => ({ dir: f.dir === 'in' ? 'in' : 'out', name: f.name || '', amount: Number(f.amount) || 0, count: Number(f.count) || 1 })) : [];
+    editFlows = (it && Array.isArray(it.flows)) ? it.flows.map((f) => ({ dir: f.dir === 'in' ? 'in' : 'out', name: f.name || '', amount: Number(f.amount) || 0, count: Number(f.count) || 1, day: parseDay(f.day) })) : [];
     renderFlowRows();
     selColor = it && it.color ? it.color : COLORS[0];
     renderSwatches();
@@ -866,7 +914,7 @@
 
   // ---------- バインド ----------
   function bind() {
-    $('#addBtn').addEventListener('click', () => (state.tab === 'flow' ? openTransfer(null) : openEdit(null)));
+    $('#addBtn').addEventListener('click', () => (state.tab === 'list' ? openEdit(null) : openTransfer(null)));
     $('#cancelEdit').addEventListener('click', () => showView('mainView'));
     $('#saveEdit').addEventListener('click', saveEdit);
     $('#saveEdit2').addEventListener('click', saveEdit);
@@ -893,6 +941,13 @@
     setupReorder($('#list'));
     bindFlow();
     $('#shotShare').addEventListener('click', shareShot);
+    $('#tMode').addEventListener('click', (e) => { const o = e.target.closest('.iopt'); if (o) setMode(o.dataset.v); });
+    $('#planPane').addEventListener('click', (e) => {
+      const c = e.target.closest('[data-chk]'); if (c) { toggleDone(c.dataset.chk); return; }
+      if (e.target.closest('[data-goflow]')) { setTab('flow'); return; }
+      const tEl = e.target.closest('[data-tid]'); if (tEl) { openTransfer(tEl.dataset.tid); return; }
+      const aEl = e.target.closest('[data-aid]'); if (aEl) openEdit(aEl.dataset.aid);
+    });
     $('#shotClose').addEventListener('click', () => $('#shot').classList.remove('show'));
   }
 
@@ -921,15 +976,17 @@
 
   // タブ
   function setTab(tab) {
-    state.tab = tab === 'flow' ? 'flow' : 'list';
+    state.tab = ['flow', 'plan'].includes(tab) ? tab : 'list';
     try { localStorage.setItem(TAB_KEY, state.tab); } catch (e) {}
     $$('#tabbar button').forEach((b) => b.classList.toggle('on', b.dataset.tab === state.tab));
     $('#list').hidden = state.tab !== 'list';
     $('#flowPane').hidden = state.tab !== 'flow';
-    $('#mainTitle').textContent = state.tab === 'flow' ? 'お湯の流れ' : 'マネ風呂';
-    $('#addBtn').setAttribute('aria-label', state.tab === 'flow' ? '流れを追加' : '湯船を追加');
-    $('#mainTitle').classList.toggle('brand', state.tab !== 'flow');
+    $('#planPane').hidden = state.tab !== 'plan';
+    $('#mainTitle').textContent = state.tab === 'flow' ? 'お湯の流れ' : state.tab === 'plan' ? '今月の段取り' : 'マネ風呂';
+    $('#addBtn').setAttribute('aria-label', state.tab === 'list' ? '湯船を追加' : '流れを追加');
+    $('#mainTitle').classList.toggle('brand', state.tab === 'list');
     if (state.tab === 'flow') renderFlow();
+    if (state.tab === 'plan') renderPlan();
   }
 
   // 図のための並べ方（上から：入ってくるお金 → 口座 → 口座 → 出ていくお金）
@@ -1055,6 +1112,8 @@
       <div class="fs mv"><div class="l">湯船どうし</div><div class="v">¥${fmtYen(g.moveTotal)}</div></div>
       <div class="fs out"><div class="l">排水</div><div class="v">¥${fmtYen(g.outTotal)}</div></div>
     </div>`;
+    const drys = g.accts.map((a) => ({ a, d: dryInfo(a) })).filter((x) => x.d);
+    if (drys.length) html += `<div class="warn-card">${drys.map(({ a, d }) => `<div class="wl" data-aid="${a.id}"><span>🔥</span><span><b>空焚き注意：${esc(a.bank)}</b><br>毎月 −¥${fmtYen(-d.net)} ずつ減っていきます。${d.noIn ? 'どこからも足していません。' : `入る分より、出る分が多くなっています。`}</span></div>`).join('')}</div>`;
     html += `<button class="flow-add" id="flowAddBig"><span class="plus">＋</span>湯船どうしの流れを追加</button>`;
     html += `<div class="diagram" id="diagram"></div>`;
     html += `<div class="dg-hint">ひと月あたりの金額です。お湯はいつも左から右へ流れます。<br>流れの行をタップで編集、湯船ごとの行をタップで湯船を編集。</div>`;
@@ -1095,6 +1154,8 @@
     $('#tAmt').value = t && t.amount ? fmtYen(t.amount) : '';
     $('#tCnt').value = t ? (t.count || 1) : 1;
     $('#tName').value = t && t.name ? t.name : '';
+    $('#tDay').value = t && t.day ? t.day : '';
+    setMode(t && t.auto ? 'auto' : 'hand');
     $('#transferTitle').textContent = id ? '流れを編集' : '流れを追加';
     $('#deleteTransfer').style.display = id ? 'block' : 'none';
     showView('transferView');
@@ -1104,16 +1165,17 @@
     const amount = parseYen($('#tAmt').value);
     const count = Math.max(1, Math.min(31, parseInt(String($('#tCnt').value).replace(/[^\d]/g, ''), 10) || 1));
     const name = $('#tName').value.trim();
+    const day = parseDay($('#tDay').value), auto = $('#tMode').dataset.v === 'auto';
     if (from === to) { toast('出す湯船と入る湯船は別にしてください'); return; }
     if (!amount) { toast('金額を入れてください'); $('#tAmt').focus(); return; }
     const now = Date.now();
     let t = editingTid ? state.transfers.find((x) => x.id === editingTid) : null;
-    if (t) Object.assign(t, { from, to, amount, count, name, updatedAt: now });
-    else { t = { id: uid(), from, to, amount, count, name, createdAt: now, updatedAt: now }; state.transfers.push(t); }
+    if (t) Object.assign(t, { from, to, amount, count, name, day, auto, updatedAt: now });
+    else { t = { id: uid(), from, to, amount, count, name, day, auto, createdAt: now, updatedAt: now }; state.transfers.push(t); }
     await put('transfers', t);
     await loadAll(); renderApp();
     if (transferFromEdit) { transferFromEdit = false; renderEditTransfers(); showView('editView'); }
-    else { showView('mainView'); setTab('flow'); }
+    else { showView('mainView'); setTab(state.tab === 'plan' ? 'plan' : 'flow'); }
     toast(editingTid ? '保存しました' : '流れを追加しました');
   }
   async function deleteTransfer() {
@@ -1124,7 +1186,7 @@
     await del('transfers', editingTid);
     await loadAll(); renderApp();
     if (transferFromEdit) { transferFromEdit = false; renderEditTransfers(); showView('editView'); }
-    else { showView('mainView'); setTab('flow'); }
+    else { showView('mainView'); setTab(state.tab === 'plan' ? 'plan' : 'flow'); }
     toast('削除しました');
   }
   let lastFlowW = 0;
@@ -1147,6 +1209,68 @@
     window.addEventListener('resize', () => { const w = $('#flowPane').clientWidth; if (state.tab === 'flow' && Math.abs(w - lastFlowW) > 20) { lastFlowW = w; renderFlow(); } });
   }
 
+
+
+  // ---------- 日付・空焚き・段取り ----------
+  function parseDay(v) { const n = parseInt(String(v || '').replace(/[^\d]/g, ''), 10); return n >= 1 && n <= 31 ? n : null; }
+  function dayLabel(d) { return d === 31 ? '月末' : `${d}日`; }
+  function ymNow() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
+  // 毎月へっていく湯船（ほうっておくと空になる）
+  function dryInfo(a) {
+    const fin = sumFlows(a, 'in'), fout = sumFlows(a, 'out');
+    const tin = state.transfers.filter((t) => t.to === a.id).reduce((s, t) => s + perMonth(t), 0);
+    const tout = state.transfers.filter((t) => t.from === a.id).reduce((s, t) => s + perMonth(t), 0);
+    const net = fin - fout + tin - tout;
+    if (net >= 0 || !(fin || fout || tin || tout)) return null;
+    return { net, noIn: !fin && !tin };
+  }
+  function setMode(v) { const seg = $('#tMode'); seg.dataset.v = v; seg.querySelectorAll('.iopt').forEach((o) => o.classList.toggle('sel', o.dataset.v === v)); }
+  function planItems() {
+    const out = [];
+    for (const a of state.items) for (const f of (a.flows || [])) {
+      const v = (Number(f.amount) || 0) * (Number(f.count) || 1); if (!v) continue;
+      out.push({ kind: f.dir === 'in' ? 'in' : 'out', day: f.day || null, v, a, f });
+    }
+    for (const t of state.transfers) { const f = acctById(t.from), to = acctById(t.to); if (f && to) out.push({ kind: 'mv', day: t.day || null, v: perMonth(t), t, f, to }); }
+    const rank = { in: 0, mv: 1, out: 2 };
+    return out.sort((p, q) => (p.day || 99) - (q.day || 99) || rank[p.kind] - rank[q.kind] || q.v - p.v);
+  }
+  function renderPlan() {
+    const pane = $('#planPane');
+    if (!state.items.length) { pane.innerHTML = `<div class="empty"><div class="big">🛁</div>まず「湯船」タブで口座を登録してください。</div>`; return; }
+    const items = planItems(), ym = ymNow(), now = new Date(), today = now.getDate();
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const hand = items.filter((x) => x.kind === 'mv' && !x.t.auto), done = hand.filter((x) => x.t.doneYm === ym);
+    let html = `<div class="plan-head"><div class="ph-m">${now.getMonth() + 1}月</div><div class="ph-s">日付順の段取り。手で移したら ○ をタップ。</div>${hand.length ? `<div class="ph-p">${done.length} / ${hand.length} 済み</div>` : ''}</div>`;
+    const drys = state.items.filter((a) => dryInfo(a));
+    if (drys.length) html += `<div class="warn-card"><div class="wl" data-goflow="1"><span>🔥</span><span><b>空焚き注意 ${drys.length}件</b>：${drys.map((a) => esc(a.bank)).join('、')}<br>毎月へっていく湯船があります（「お湯の流れ」で確認）</span></div></div>`;
+    if (!items.length) { html += `<div class="empty-sm">まだ流れがありません。<br>湯船の「蛇口と排水」や「湯船どうしの流れ」に<br>日付を入れると、ここに段取りが並びます。</div>`; pane.innerHTML = html; return; }
+    let todayShown = false, nodateShown = false;
+    for (const x of items) {
+      const eff = x.day ? Math.min(x.day, lastDay) : null;
+      if (!todayShown && (eff === null || eff >= today)) { html += `<div class="today-line">今日 ${today}日</div>`; todayShown = true; }
+      if (!x.day && !nodateShown) { html += `<div class="sec-label" style="margin:14px 4px 8px">日付なし（流れの編集で日付を入れられます）</div>`; nodateShown = true; }
+      const isHand = x.kind === 'mv' && !x.t.auto, isDone = isHand && x.t.doneYm === ym;
+      const late = isHand && !isDone && eff !== null && eff < today;
+      let main, sub, val;
+      if (x.kind === 'in') { main = `<span class="pk in">給湯</span>${esc(x.a.bank)} へ`; sub = x.f.name || ''; val = `<span style="color:#0f7a55">+¥${fmtYen(x.v)}</span>`; }
+      else if (x.kind === 'out') { main = `<span class="pk out">排水</span>${esc(x.a.bank)} から`; sub = x.f.name || ''; val = `<span style="color:#a0621a">−¥${fmtYen(x.v)}</span>`; }
+      else { main = `<span class="pk mv">移す</span>${esc(x.f.bank)} → ${esc(x.to.bank)}`; sub = [x.t.name, (Number(x.t.count) || 1) > 1 ? `¥${fmtYen(x.t.amount)} × ${x.t.count}回` : ''].filter(Boolean).join('　'); val = `<span style="color:#14739c">¥${fmtYen(x.v)}</span>`; }
+      const attr = x.kind === 'mv' ? `data-tid="${x.t.id}"` : `data-aid="${x.a.id}"`;
+      const right = x.kind === 'mv' ? (isHand ? `<div class="pck ${isDone ? 'on' : ''}" data-chk="${x.t.id}">${isDone ? '✓' : ''}</div>` : `<div class="pauto">自動</div>`) : `<div class="pauto">自動</div>`;
+      html += `<div class="plan-row ${isDone ? 'done' : ''} ${late ? 'late' : ''}" ${attr}><div class="pd">${x.day ? dayLabel(x.day) : '−'}${late ? '<small>まだ</small>' : ''}</div><div class="pm">${main}${sub ? `<small>${esc(sub)}</small>` : ''}</div><div class="pv">${val}</div>${right}</div>`;
+    }
+    if (!todayShown) html += `<div class="today-line">今日 ${today}日</div>`;
+    pane.innerHTML = html;
+  }
+  async function toggleDone(tid) {
+    const t = state.transfers.find((x) => x.id === tid); if (!t) return;
+    const ym = ymNow();
+    t.doneYm = t.doneYm === ym ? '' : ym; t.updatedAt = Date.now();
+    await put('transfers', t);
+    renderPlan();
+    if (t.doneYm) toast('移しました ✓');
+  }
 
   // ---------- お湯の流れを画像にする ----------
   let shotFile = null, shotUrl = '';
