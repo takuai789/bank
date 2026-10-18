@@ -1,6 +1,6 @@
 {
-  "name": "BankRank",
-  "short_name": "BankRank",
+  "name": "マネ風呂",
+  "short_name": "マネ風呂",
   "description": "銀行口座ごとに「最低でも置いておきたい額」を管理。引き落とし・解約候補フラグ付き。",
   "start_url": "./",
   "scope": "./",
