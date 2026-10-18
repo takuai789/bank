@@ -296,6 +296,16 @@
   .flow-sum .fs.mv .v, .tr-card .amt, .mflow .net.mv { color: var(--water-deep); }
   .toast { background: rgba(14,74,99,.95); }
   .empty .big { font-size: 46px; }
+  .img-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; margin-top:10px; padding:12px; border-radius:12px; border:1.5px solid rgba(27,136,179,.35); background:#fff; color:var(--water-deep); font-size:14.5px; font-weight:700; font-family:inherit; cursor:pointer; }
+  .img-btn:disabled { opacity:.5; }
+  .shot { position:fixed; inset:0; z-index:1150; background:rgba(14,40,52,.82); display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 16px); }
+  .shot.show { display:flex; }
+  .shot img { max-width:100%; max-height:70vh; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.35); background:#fff; -webkit-touch-callout:default; }
+  .shot .shot-note { color:rgba(255,255,255,.8); font-size:12px; text-align:center; line-height:1.6; }
+  .shot .shot-btns { display:flex; gap:10px; width:100%; max-width:360px; }
+  .shot .shot-btns button { flex:1; padding:14px; border:0; border-radius:14px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; }
+  .shot #shotShare { background:linear-gradient(180deg,#2a9cc6,#14739c); color:#fff; }
+  .shot #shotClose { background:rgba(255,255,255,.16); color:#fff; }
   .concept { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 18px; font-size: 13px; line-height: 1.75; color: #345; box-shadow: 0 1px 2px rgba(14,74,99,.08); }
   .concept b { color: var(--water-deep); }
 </style>
@@ -463,6 +473,7 @@
 </div>
 
 <input type="file" id="importFile" accept="application/json,.json" style="display:none;" />
+<div class="shot" id="shot"><img id="shotImg" alt="お湯の流れの画像" /><div class="shot-note">「保存・共有」から、写真に保存したり送ったりできます。<br>画像を長押ししても保存できます。</div><div class="shot-btns"><button id="shotClose">とじる</button><button id="shotShare">保存・共有</button></div></div>
 <div class="modal" id="modal"><div class="mbox"><div class="mmsg" id="mMsg"></div><div class="mbtns"><button id="mCancel">キャンセル</button><button id="mOk" class="danger">削除</button></div></div></div>
 <div class="toast" id="toast"></div>
 
@@ -496,7 +507,7 @@
   function del(store, id) { return new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   // ---------- バージョン ----------
-  const APP_VERSION = '1.7.0';
+  const APP_VERSION = '1.8.0';
   function renderVersionLabel() { const el = $('#versionLabel'); if (el) el.textContent = 'v' + APP_VERSION; }
 
   // ---------- State ----------
@@ -881,6 +892,8 @@
     setupAmountFormat();
     setupReorder($('#list'));
     bindFlow();
+    $('#shotShare').addEventListener('click', shareShot);
+    $('#shotClose').addEventListener('click', () => $('#shot').classList.remove('show'));
   }
 
 
@@ -967,7 +980,7 @@
     const cxOf = (n) => n.x + n.w / 2;
     outs.forEach((list, n) => { list.sort((p, q) => cxOf(p.to) - cxOf(q.to)); list.forEach((e, i) => { e.x1 = n.x + n.w * (i + 1) / (list.length + 1); }); });
     ins.forEach((list, n) => { list.sort((p, q) => cxOf(p.from) - cxOf(q.from)); list.forEach((e, i) => { e.x2 = n.x + n.w * (i + 1) / (list.length + 1); }); });
-    let out = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP', -apple-system, sans-serif">`;
+    let out = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', -apple-system, sans-serif">`;
     out += `<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker></defs>`;
     const labels = [], placed = [];
     for (const e of edges) {
@@ -1038,6 +1051,7 @@
       </div>`;
     }).join('');
     pane.innerHTML = html;
+    $('#diagram').insertAdjacentHTML('afterend', `<button class="img-btn" id="flowImgBtn">🖼 この流れを画像にする</button>`);
     const box = $('#diagram');
     box.innerHTML = diagramSVG(g, Math.max(300, box.clientWidth || pane.clientWidth - 32));
   }
@@ -1118,10 +1132,95 @@
     $('#tFrom').addEventListener('change', () => { if ($('#tFrom').value === $('#tTo').value) { const o = state.items.find((x) => x.id !== $('#tFrom').value); if (o) $('#tTo').value = o.id; } });
     $('#flowPane').addEventListener('click', (e) => {
       if (e.target.closest('#flowAddBig, #flowAddMini')) { openTransfer(null); return; }
+      if (e.target.closest('#flowImgBtn')) { makeFlowImage(); return; }
       const tEl = e.target.closest('[data-tid]'); if (tEl) { openTransfer(tEl.getAttribute('data-tid')); return; }
       const aEl = e.target.closest('[data-aid]'); if (aEl) openEdit(aEl.getAttribute('data-aid'));
     });
     window.addEventListener('resize', () => { const w = $('#flowPane').clientWidth; if (state.tab === 'flow' && Math.abs(w - lastFlowW) > 20) { lastFlowW = w; renderFlow(); } });
+  }
+
+
+  // ---------- お湯の流れを画像にする ----------
+  let shotFile = null, shotUrl = '';
+  function svgText(x, y, t, size, weight, fill, anchor = 'start') {
+    return `<text x="${x}" y="${y}" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="${anchor}">${esc(t)}</text>`;
+  }
+  async function makeFlowImage() {
+    const btn = $('#flowImgBtn'); if (btn) { btn.disabled = true; btn.textContent = 'つくっています…'; }
+    try {
+      const g = buildGraph();
+      const DW = 360;
+      const diag = diagramSVG(g, DW);
+      const dw = +diag.match(/width="([\d.]+)"/)[1], dh = +diag.match(/height="([\d.]+)"/)[1];
+      const W = Math.max(400, dw + 40), PAD = 20;
+      const d = new Date(), dateTxt = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+      const trs = g.tr.slice().sort((p, q) => perMonth(q) - perMonth(p));
+      let y = PAD;
+      let body = '';
+      // 見出し
+      body += svgText(PAD, y + 26, 'マネ風呂　お湯の流れ', 22, 800, '#0e4a63');
+      body += svgText(W - PAD, y + 26, dateTxt, 12.5, 600, '#557483', 'end');
+      y += 44;
+      // 合計
+      const bw = (W - PAD * 2 - 16) / 3;
+      [['🚰 給湯', g.inTotal, '#1aa37a'], ['湯船どうし', g.moveTotal, '#1b88b3'], ['排水', g.outTotal, '#c98a2b']].forEach(([l, v, c], i) => {
+        const x = PAD + i * (bw + 8);
+        body += `<rect x="${x}" y="${y}" width="${bw}" height="56" rx="12" fill="#fff"/>`;
+        body += svgText(x + bw / 2, y + 21, l, 11, 700, '#557483', 'middle');
+        body += svgText(x + bw / 2, y + 43, '¥' + fmtYen(v), 15, 800, c, 'middle');
+      });
+      y += 68;
+      // 図
+      body += `<rect x="${PAD}" y="${y}" width="${W - PAD * 2}" height="${dh + 20}" rx="16" fill="#fff"/>`;
+      body += diag.replace('<svg ', `<svg x="${(W - dw) / 2}" y="${y + 10}" `);
+      y += dh + 32;
+      // 一覧
+      if (trs.length) {
+        body += svgText(PAD + 4, y + 14, `湯船どうしの流れ（${trs.length}件）`, 12, 700, '#557483');
+        y += 24;
+        for (const t of trs) {
+          const f = acctById(t.from), to = acctById(t.to), cnt = Number(t.count) || 1;
+          body += `<rect x="${PAD}" y="${y}" width="${W - PAD * 2}" height="${t.name ? 50 : 38}" rx="10" fill="#fff"/>`;
+          body += `<rect x="${PAD + 12}" y="${y + 14}" width="8" height="8" rx="2" fill="${esc(f.color || '#999')}"/>`;
+          body += svgText(PAD + 26, y + 23, `${clip(f.bank, 9)} → ${clip(to.bank, 9)}`, 13.5, 700, '#1a1a1a');
+          body += svgText(W - PAD - 12, y + 23, `¥${fmtYen(perMonth(t))}/月`, 13.5, 800, '#1b88b3', 'end');
+          if (t.name || cnt > 1) body += svgText(PAD + 26, y + 41, [t.name, cnt > 1 ? `¥${fmtYen(t.amount)} × ${cnt}回` : ''].filter(Boolean).join('　'), 11, 500, '#7b8f98');
+          y += (t.name || cnt > 1 ? 50 : 38) + 6;
+        }
+      }
+      y += 8;
+      body += svgText(W / 2, y + 10, 'ひと月あたりの金額　・　マネ風呂', 10.5, 600, '#8aa3ad', 'middle');
+      const H = y + 26;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', -apple-system, sans-serif">
+        <defs><pattern id="tile" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="#eaf6fa"/><path d="M24 0H0V24" fill="none" stroke="#d6ecf3" stroke-width="1"/></pattern></defs>
+        <rect width="${W}" height="${H}" fill="url(#tile)"/>${body}</svg>`;
+      const img = new Image();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      await img.decode();
+      const scale = 3, cv = document.createElement('canvas');
+      cv.width = Math.round(W * scale); cv.height = Math.round(H * scale);
+      const c2 = cv.getContext('2d'); c2.scale(scale, scale); c2.drawImage(img, 0, 0, W, H);
+      const blob = await new Promise((res) => cv.toBlob(res, 'image/png'));
+      if (!blob) throw new Error('no blob');
+      const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+      shotFile = new File([blob], `manefuro-flow-${stamp}.png`, { type: 'image/png' });
+      if (shotUrl) URL.revokeObjectURL(shotUrl);
+      shotUrl = URL.createObjectURL(blob);
+      $('#shotImg').src = shotUrl;
+      $('#shot').classList.add('show');
+    } catch (e) {
+      toast('画像にできませんでした');
+    }
+    if (btn) { btn.disabled = false; btn.textContent = '🖼 この流れを画像にする'; }
+  }
+  async function shareShot() {
+    if (!shotFile) return;
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [shotFile] })) { await navigator.share({ files: [shotFile], title: 'お湯の流れ' }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = shotUrl; a.download = shotFile.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('画像を保存しました');
   }
 
   // ---------- 起動 ----------
