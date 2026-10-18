@@ -179,6 +179,50 @@
   #updateBanner.show { transform: translateY(0); }
   #updateBanner svg { display: block; flex-shrink: 0; }
 
+  /* 下のタブ */
+  .tabbar { position:fixed; left:0; right:0; bottom:0; z-index:15; display:flex; background:rgba(249,249,251,.94); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:0.5px solid var(--sep); padding-bottom:var(--safe-bottom); }
+  .tabbar button { flex:1; border:0; background:none; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 0 6px; font-size:10.5px; font-weight:600; color:#8e8e93; cursor:pointer; }
+  .tabbar button svg { display:block; }
+  .tabbar button.on { color:var(--navy); }
+  #mainView .scroll { padding-bottom: calc(150px + var(--safe-bottom)); }
+  #mainView .fab { bottom: calc(74px + var(--safe-bottom)); }
+  .pane[hidden] { display:none !important; }
+
+  /* お金の流れ */
+  .flow-sum { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+  .flow-sum .fs { background:var(--card); border-radius:14px; padding:10px 8px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .flow-sum .fs .l { font-size:10.5px; color:var(--secondary); font-weight:600; }
+  .flow-sum .fs .v { font-size:15px; font-weight:800; margin-top:2px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .flow-sum .fs.in .v { color:var(--green); } .flow-sum .fs.mv .v { color:var(--navy); } .flow-sum .fs.out .v { color:var(--amber); }
+  .diagram { background:var(--card); border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.06); padding:10px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .diagram svg { display:block; margin:0 auto; }
+  .diagram .nd { cursor:pointer; }
+  .diagram .ed { cursor:pointer; }
+  .dg-hint { font-size:11.5px; color:var(--secondary); text-align:center; margin:8px 4px 0; line-height:1.55; }
+  .tr-card { background:var(--card); border-radius:14px; padding:12px 14px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,.05); display:flex; align-items:center; gap:10px; cursor:pointer; }
+  .tr-card .who { flex:1; min-width:0; font-size:14.5px; font-weight:600; line-height:1.45; }
+  .tr-card .who .arrow { color:var(--secondary); margin:0 5px; font-weight:400; }
+  .tr-card .who .dot { display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:5px; vertical-align:1px; }
+  .tr-card .nm { font-size:12px; color:var(--secondary); font-weight:400; margin-top:2px; }
+  .tr-card .amt { font-size:15px; font-weight:800; color:var(--navy); white-space:nowrap; font-variant-numeric:tabular-nums; text-align:right; }
+  .tr-card .amt .per { display:block; font-size:10.5px; color:var(--secondary); font-weight:600; }
+  .mflow + .mflow { margin-top:0; padding-top:6px; border-top:0; }
+  .mflow .net.mv { color:var(--navy); }
+  select.input { -webkit-appearance:none; appearance:none; background-image:linear-gradient(45deg,transparent 50%,#8e8e93 50%),linear-gradient(135deg,#8e8e93 50%,transparent 50%); background-position:calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size:5px 5px; background-repeat:no-repeat; padding-right:36px; }
+  .cnt-wrap { display:flex; align-items:center; gap:8px; }
+  .cnt-wrap .input { width:90px; text-align:center; font-weight:700; }
+  .cnt-wrap span { font-size:14px; color:var(--secondary); }
+
+  /* 確認ダイアログ（iOSのホーム画面アプリでは confirm() が出ないため） */
+  .modal { position:fixed; inset:0; z-index:1200; background:rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; padding:24px; }
+  .modal.show { display:flex; }
+  .mbox { background:#fff; border-radius:16px; width:100%; max-width:300px; overflow:hidden; text-align:center; }
+  .mbox .mmsg { padding:20px 18px 18px; font-size:15px; line-height:1.55; }
+  .mbox .mbtns { display:flex; border-top:0.5px solid var(--sep); }
+  .mbox .mbtns button { flex:1; border:0; background:none; padding:13px; font-size:16px; font-family:inherit; color:var(--blue); cursor:pointer; }
+  .mbox .mbtns button + button { border-left:0.5px solid var(--sep); }
+  .mbox .mbtns .danger { color:var(--danger); font-weight:600; }
+
   .toast { position:fixed; left:50%; bottom:calc(90px + var(--safe-bottom)); transform:translateX(-50%) translateY(20px); background:rgba(30,41,59,.95); color:#fff; padding:11px 18px; border-radius:12px; font-size:13.5px; font-weight:500; opacity:0; transition:opacity .25s, transform .25s; z-index:1100; pointer-events:none; white-space:nowrap; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
@@ -189,13 +233,61 @@
   <div id="mainView" class="view active">
     <div class="navbar">
       <span style="width:44px;"></span>
-      <span class="title">BankRank</span>
+      <span class="title" id="mainTitle">BankRank</span>
       <button class="icon-btn" id="openSettings" aria-label="設定">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </div>
-    <div class="scroll" id="list"></div>
+    <div class="scroll pane" id="list"></div>
+    <div class="scroll pane" id="flowPane" hidden></div>
     <button class="fab" id="addBtn" aria-label="口座を追加">＋</button>
+    <nav class="tabbar" id="tabbar">
+      <button data-tab="list" class="on" aria-label="口座">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg>
+        口座
+      </button>
+      <button data-tab="flow" aria-label="お金の流れ">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="16" width="7" height="5" rx="1.5"/><path d="M6.5 8v3.5a2 2 0 0 0 2 2h7a2 2 0 0 1 2 2V16"/><path d="m15.5 14 2 2 2-2"/></svg>
+        お金の流れ
+      </button>
+    </nav>
+  </div>
+
+  <!-- 口座間の流れ 追加/編集 -->
+  <div id="transferView" class="view">
+    <div class="navbar">
+      <button class="icon-btn text" id="cancelTransfer">キャンセル</button>
+      <span class="title" id="transferTitle">流れを追加</span>
+      <button class="icon-btn text bold" id="saveTransfer">保存</button>
+    </div>
+    <div class="form">
+      <div class="field">
+        <label>出す口座（ここから）</label>
+        <select class="input" id="tFrom"></select>
+      </div>
+      <div class="field">
+        <label>入る口座（ここへ）</label>
+        <select class="input" id="tTo"></select>
+      </div>
+      <div class="field">
+        <label>金額</label>
+        <div class="amt-wrap">
+          <span class="yen">¥</span>
+          <input class="input amt" id="tAmt" type="text" inputmode="numeric" placeholder="0" />
+        </div>
+      </div>
+      <div class="field">
+        <label>月に何回</label>
+        <div class="cnt-wrap"><input class="input" id="tCnt" type="text" inputmode="numeric" value="1" /><span>回 ／ 月</span></div>
+      </div>
+      <div class="field">
+        <label>名前（任意）</label>
+        <input class="input" id="tName" type="text" placeholder="例）生活費を移す・つみたて用" autocomplete="off" />
+        <div class="form-hint">手で振り込む・定額自動入金・カードの引き落とし口座へ移す、など。口座どうしで動くお金を登録すると、「お金の流れ」に図で出ます。</div>
+      </div>
+      <button class="btn-block btn-save" id="saveTransfer2">保存する</button>
+      <button class="btn-block btn-del" id="deleteTransfer" style="display:none;">この流れを削除</button>
+    </div>
   </div>
 
   <!-- 追加/編集 -->
@@ -276,7 +368,7 @@
     <div class="form">
       <div class="set-group">
         <div class="set-row" id="exportBtn">
-          <div><div>バックアップを書き出す</div><div class="sub">全口座をJSONファイルに保存</div></div>
+          <div><div>バックアップを書き出す</div><div class="sub">全口座と口座間の流れをJSONファイルに保存</div></div>
           <span class="chev">›</span>
         </div>
         <div class="set-row" id="importBtn">
@@ -291,6 +383,7 @@
 </div>
 
 <input type="file" id="importFile" accept="application/json,.json" style="display:none;" />
+<div class="modal" id="modal"><div class="mbox"><div class="mmsg" id="mMsg"></div><div class="mbtns"><button id="mCancel">キャンセル</button><button id="mOk" class="danger">削除</button></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -306,8 +399,8 @@
 
   // ---------- IndexedDB ----------
   const DB_NAME = 'kouza-deck-db';
-  const DB_VERSION = 1;
-  const STORES = ['items'];
+  const DB_VERSION = 2;
+  const STORES = ['items', 'transfers'];
   let _db = null;
   function openDB() {
     return new Promise((resolve, reject) => {
@@ -323,18 +416,20 @@
   function del(store, id) { return new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   // ---------- バージョン ----------
-  const APP_VERSION = '1.4.3';
+  const APP_VERSION = '1.5.0';
   function renderVersionLabel() { const el = $('#versionLabel'); if (el) el.textContent = 'v' + APP_VERSION; }
 
   // ---------- State ----------
-  const state = { items: [], filter: 'all' };
+  const TAB_KEY = 'kouza-deck.tab';
+  let savedTab = 'list'; try { savedTab = localStorage.getItem(TAB_KEY) === 'flow' ? 'flow' : 'list'; } catch (e) {}
+  const state = { items: [], transfers: [], filter: 'all', tab: savedTab };
   let editingId = null;
   let selColor = COLORS[0];
   let flagDraw = false, flagCand = false;
   let incomeSel = 'none';
   let editFlows = [];
 
-  async function loadAll() { state.items = await getAll('items'); }
+  async function loadAll() { state.items = await getAll('items'); state.transfers = (await getAll('transfers')).filter((t) => !t.deleted); }
   const byOrder = (a, b) => (a.order || 0) - (b.order || 0);
 
   // ---------- toast ----------
@@ -355,6 +450,7 @@
 
     if (state.items.length === 0) {
       list.innerHTML = `<div class="empty"><div class="big">¥</div>まだ口座がありません。<br>右下の ＋ から、よく使う口座を<br>登録してみましょう。</div>`;
+      if (state.tab === 'flow') renderFlow();
       return;
     }
 
@@ -372,6 +468,7 @@
       cands.forEach((it, i) => { if (it.drawdown) rows.push(cardHTML(it, active.length + i + 1, true)); });
       html += rows.length ? rows.join('') : `<div class="empty-sm">引き落としフラグの口座はありません</div>`;
       list.innerHTML = html;
+      if (state.tab === 'flow') renderFlow();
       return;
     }
 
@@ -382,6 +479,7 @@
       html += cands.map((it, i) => cardHTML(it, active.length + i + 1, true)).join('');
     }
     list.innerHTML = html;
+    if (state.tab === 'flow') renderFlow();
   }
 
   function medalBg(rank, out) {
@@ -416,6 +514,10 @@
     if (flows.length) {
       const net = flowNet(it);
       mflow = `<div class="mflow"><span class="lbl">毎月の増減</span><span class="net ${net >= 0 ? 'pos' : 'neg'}">${net >= 0 ? '+' : '−'}¥${fmtYen(Math.abs(net))}<span class="per">/月</span></span></div>`;
+    }
+    const mv = moveNet(it.id);
+    if (mv.any) {
+      mflow += `<div class="mflow"><span class="lbl">口座間の移動</span><span class="net mv">${mv.net >= 0 ? '+' : '−'}¥${fmtYen(Math.abs(mv.net))}<span class="per">/月</span></span></div>`;
     }
     return `
       <div class="acct ${out ? 'cand' : ''} ${(rank === 1 && !out) ? 'top1' : ''}" data-id="${it.id}" style="--bc:${esc(it.color)}">
@@ -530,7 +632,10 @@
   async function deleteItem() {
     if (!editingId) return;
     const it = state.items.find((x) => x.id === editingId);
-    if (!confirm(`「${it ? it.bank : 'この口座'}」を削除しますか？`)) return;
+    const rel = state.transfers.filter((t) => t.from === editingId || t.to === editingId);
+    const ok = await askConfirm(`「${it ? it.bank : 'この口座'}」を削除しますか？${rel.length ? `<br><small style="color:var(--secondary)">この口座の流れ（${rel.length}件）も消えます</small>` : ''}`);
+    if (!ok) return;
+    for (const t of rel) await del('transfers', t.id);
     await del('items', editingId);
     await loadAll(); renderApp(); showView('mainView');
     toast('削除しました');
@@ -539,7 +644,7 @@
   // ---------- JSON 書き出し/取り込み ----------
   const SCHEMA = 'kouza-deck.v1';
   async function exportData() {
-    const data = { schema: SCHEMA, exportedAt: new Date().toISOString(), items: state.items };
+    const data = { schema: SCHEMA, exportedAt: new Date().toISOString(), items: state.items, transfers: await getAll('transfers') };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -558,6 +663,11 @@
       for (const it of (data.items || [])) {
         const local = localById.get(it.id);
         if (!local || (it.updatedAt || 0) > (local.updatedAt || 0)) { await put('items', it); n++; }
+      }
+      const localT = new Map((await getAll('transfers')).map((t) => [t.id, t]));
+      for (const t of (Array.isArray(data.transfers) ? data.transfers : [])) {
+        const lt = localT.get(t.id);
+        if (!lt || (t.updatedAt || 0) > (lt.updatedAt || 0)) { await put('transfers', t); n++; }
       }
       await loadAll(); renderApp();
       toast(`${n}件を取り込みました`);
@@ -648,7 +758,7 @@
 
   // ---------- バインド ----------
   function bind() {
-    $('#addBtn').addEventListener('click', () => openEdit(null));
+    $('#addBtn').addEventListener('click', () => (state.tab === 'flow' ? openTransfer(null) : openEdit(null)));
     $('#cancelEdit').addEventListener('click', () => showView('mainView'));
     $('#saveEdit').addEventListener('click', saveEdit);
     $('#saveEdit2').addEventListener('click', saveEdit);
@@ -673,6 +783,219 @@
     $('#list').addEventListener('click', (e) => { const opt = e.target.closest('.seg-opt'); if (!opt) return; state.filter = opt.dataset.f; renderApp(); });
     setupAmountFormat();
     setupReorder($('#list'));
+    bindFlow();
+  }
+
+
+  // ---------- お金の流れ（口座どうし） ----------
+  const perMonth = (t) => (Number(t.amount) || 0) * (Number(t.count) || 1);
+  const acctById = (id) => state.items.find((x) => x.id === id);
+  function moveNet(id) {
+    let net = 0, any = false;
+    for (const t of state.transfers) {
+      if (t.to === id) { net += perMonth(t); any = true; }
+      if (t.from === id) { net -= perMonth(t); any = true; }
+    }
+    return { net, any };
+  }
+  const sumFlows = (it, dir) => (it.flows || []).filter((f) => (dir === 'in' ? f.dir === 'in' : f.dir !== 'in')).reduce((a, f) => a + (Number(f.amount) || 0) * (Number(f.count) || 0), 0);
+
+  // 確認ダイアログ
+  function askConfirm(html, okLabel = '削除') {
+    return new Promise((resolve) => {
+      $('#mMsg').innerHTML = html; $('#mOk').textContent = okLabel; $('#modal').classList.add('show');
+      const done = (v) => { $('#modal').classList.remove('show'); $('#mOk').onclick = null; $('#mCancel').onclick = null; resolve(v); };
+      $('#mOk').onclick = () => done(true); $('#mCancel').onclick = () => done(false);
+    });
+  }
+
+  // タブ
+  function setTab(tab) {
+    state.tab = tab === 'flow' ? 'flow' : 'list';
+    try { localStorage.setItem(TAB_KEY, state.tab); } catch (e) {}
+    $$('#tabbar button').forEach((b) => b.classList.toggle('on', b.dataset.tab === state.tab));
+    $('#list').hidden = state.tab !== 'list';
+    $('#flowPane').hidden = state.tab !== 'flow';
+    $('#mainTitle').textContent = state.tab === 'flow' ? 'お金の流れ' : 'BankRank';
+    $('#addBtn').setAttribute('aria-label', state.tab === 'flow' ? '流れを追加' : '口座を追加');
+    if (state.tab === 'flow') renderFlow();
+  }
+
+  // 図のための並べ方（上から：入ってくるお金 → 口座 → 口座 → 出ていくお金）
+  function buildGraph() {
+    const tr = state.transfers.filter((t) => acctById(t.from) && acctById(t.to));
+    const involved = new Set(tr.flatMap((t) => [t.from, t.to]));
+    const accts = state.items.filter((x) => !x.candidate || involved.has(x.id) || (x.flows || []).length).sort((a, b) => (a.candidate ? 1 : 0) - (b.candidate ? 1 : 0) || byOrder(a, b));
+    const depth = Object.fromEntries(accts.map((a) => [a.id, 0]));
+    for (let i = 0; i < accts.length; i++) {
+      let changed = false;
+      for (const t of tr) { if (depth[t.from] === undefined || depth[t.to] === undefined) continue; const d = Math.min(accts.length, depth[t.from] + 1); if (d > depth[t.to]) { depth[t.to] = d; changed = true; } }
+      if (!changed) break;
+    }
+    const inTotal = accts.reduce((a, x) => a + sumFlows(x, 'in'), 0);
+    const outTotal = accts.reduce((a, x) => a + sumFlows(x, 'out'), 0);
+    const moveTotal = tr.reduce((a, t) => a + perMonth(t), 0);
+    return { tr, accts, depth, inTotal, outTotal, moveTotal };
+  }
+
+  function clip(str, max) { const a = Array.from(String(str)); return a.length > max ? a.slice(0, max - 1).join('') + '…' : a.join(''); }
+
+  function diagramSVG(g, width) {
+    const PAD = 14, NH = 58, VGAP = 70, HGAP = 12, MINW = 92;
+    const layers = [];
+    if (g.inTotal > 0) layers.push([{ kind: 'in' }]);
+    const maxD = g.accts.reduce((m, a) => Math.max(m, g.depth[a.id]), 0);
+    for (let d = 0; d <= maxD; d++) { const L = g.accts.filter((a) => g.depth[a.id] === d).map((a) => ({ kind: 'acct', a })); if (L.length) layers.push(L); }
+    if (g.outTotal > 0) layers.push([{ kind: 'out' }]);
+    const widest = layers.reduce((m, L) => Math.max(m, L.length), 1);
+    const W = Math.max(width, PAD * 2 + widest * MINW + (widest - 1) * HGAP);
+    const pos = {};
+    layers.forEach((L, li) => {
+      const y = PAD + li * (NH + VGAP);
+      if (L[0].kind !== 'acct') { const w = Math.min(W - PAD * 2, 220); L[0].x = (W - w) / 2; L[0].y = y; L[0].w = w; pos[L[0].kind] = L[0]; return; }
+      const w = Math.min(160, (W - PAD * 2 - (L.length - 1) * HGAP) / L.length);
+      const total = L.length * w + (L.length - 1) * HGAP, x0 = (W - total) / 2;
+      L.forEach((n, i) => { n.x = x0 + i * (w + HGAP); n.y = y; n.w = w; pos[n.a.id] = n; });
+    });
+    const H = PAD * 2 + layers.length * NH + (layers.length - 1) * VGAP;
+    const edges = [];
+    for (const a of g.accts) { const v = sumFlows(a, 'in'); if (v > 0 && pos.in) edges.push({ from: pos.in, to: pos[a.id], v, color: '#0f9d6b', kind: 'in' }); }
+    for (const t of g.tr) if (pos[t.from] && pos[t.to]) edges.push({ from: pos[t.from], to: pos[t.to], v: perMonth(t), color: acctById(t.from).color || '#475569', kind: 'mv', id: t.id });
+    for (const a of g.accts) { const v = sumFlows(a, 'out'); if (v > 0 && pos.out) edges.push({ from: pos[a.id], to: pos.out, v, color: '#d97706', kind: 'out' }); }
+    const maxV = edges.reduce((m, e) => Math.max(m, e.v), 1);
+    // 出口・入口の位置を、同じ箱から出る線どうしで ずらす
+    const outs = new Map(), ins = new Map();
+    edges.forEach((e) => { (outs.get(e.from) || outs.set(e.from, []).get(e.from)).push(e); (ins.get(e.to) || ins.set(e.to, []).get(e.to)).push(e); });
+    const cxOf = (n) => n.x + n.w / 2;
+    outs.forEach((list, n) => { list.sort((p, q) => cxOf(p.to) - cxOf(q.to)); list.forEach((e, i) => { e.x1 = n.x + n.w * (i + 1) / (list.length + 1); }); });
+    ins.forEach((list, n) => { list.sort((p, q) => cxOf(p.from) - cxOf(q.from)); list.forEach((e, i) => { e.x2 = n.x + n.w * (i + 1) / (list.length + 1); }); });
+    let out = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP', -apple-system, sans-serif">`;
+    out += `<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker></defs>`;
+    const labels = [], placed = [];
+    for (const e of edges) {
+      const y1 = e.from.y + NH, y2 = e.to.y;
+      const sw = 2 + 9 * (e.v / maxV);
+      let d;
+      if (y2 > y1) { const dy = Math.max(26, (y2 - y1) * 0.5); d = `M${e.x1} ${y1} C${e.x1} ${y1 + dy}, ${e.x2} ${y2 - dy}, ${e.x2} ${y2 - 2}`; }
+      else { const side = Math.max(e.from.x + e.from.w, e.to.x + e.to.w) + 28; d = `M${e.from.x + e.from.w} ${e.from.y + NH / 2} C${side} ${e.from.y + NH / 2}, ${side} ${e.to.y + NH / 2}, ${e.to.x + e.to.w + 2} ${e.to.y + NH / 2}`; }
+      out += `<path class="ed" ${e.id ? `data-tid="${e.id}"` : ''} d="${d}" fill="none" stroke="${esc(e.color)}" stroke-opacity="0.42" stroke-width="${sw.toFixed(1)}" stroke-linecap="round"/>`;
+      out += `<path d="${d}" fill="none" stroke="transparent" stroke-width="1" marker-end="url(#ah)"/>`;
+      // 金額は「出ていく箱のすぐ下」に置く（長い矢印でも箱にかからない）。重なったら下へずらす
+      const txt = '¥' + fmtYen(e.v), tw = txt.length * 7 + 6;
+      let mx = y2 > y1 ? e.x1 + (e.x2 - e.x1) * 0.18 : Math.max(e.from.x + e.from.w, e.to.x + e.to.w) + 20;
+      mx = Math.min(W - tw / 2 - 2, Math.max(tw / 2 + 2, mx));
+      let my = y2 > y1 ? y1 + Math.min(VGAP * 0.42, (y2 - y1) * 0.45) : (e.from.y + e.to.y) / 2 + NH / 2;
+      for (let k = 0; k < 6 && placed.some((b) => Math.abs(b.x - mx) < (b.w + tw) / 2 && Math.abs(b.y - my) < 15); k++) my += 15;
+      placed.push({ x: mx, y: my, w: tw });
+      labels.push(`<text ${e.id ? `class="ed" data-tid="${e.id}"` : ''} x="${mx.toFixed(1)}" y="${(my + 4).toFixed(1)}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e293b" stroke="#fff" stroke-width="4" paint-order="stroke" stroke-linejoin="round">${txt}</text>`);
+    }
+    for (const L of layers) for (const n of L) {
+      if (n.kind === 'in' || n.kind === 'out') {
+        const isIn = n.kind === 'in', c = isIn ? '#0f9d6b' : '#d97706';
+        out += `<g><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${NH}" rx="14" fill="${isIn ? '#e8f6ef' : '#fdf3e2'}" stroke="${c}" stroke-opacity=".35"/>`;
+        out += `<text x="${n.x + n.w / 2}" y="${n.y + 24}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${c}">${isIn ? '入ってくるお金' : '出ていくお金'}</text>`;
+        out += `<text x="${n.x + n.w / 2}" y="${n.y + 43}" text-anchor="middle" font-size="13" font-weight="800" fill="#1a1a1a">${isIn ? '+' : '−'}¥${fmtYen(isIn ? g.inTotal : g.outTotal)}<tspan font-size="10" fill="#8e8e93" font-weight="600"> /月</tspan></text></g>`;
+        continue;
+      }
+      const a = n.a, net = sumFlows(a, 'in') - sumFlows(a, 'out') + moveNet(a.id).net;
+      const touched = sumFlows(a, 'in') || sumFlows(a, 'out') || moveNet(a.id).any;
+      const chars = Math.max(4, Math.floor((n.w - 18) / 13));
+      out += `<g class="nd" data-aid="${a.id}" opacity="${a.candidate ? .6 : 1}"><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${NH}" rx="12" fill="#fff" stroke="#d1d5db"/>`;
+      out += `<rect x="${n.x}" y="${n.y + 8}" width="4" height="${NH - 16}" rx="2" fill="${esc(a.color || '#999')}"/>`;
+      out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 24}" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a1a">${esc(clip(a.bank, chars))}</text>`;
+      const subTxt = !touched ? '動きなし' : net === 0 ? 'ちょうど ±0' : net > 0 ? `あまり +¥${fmtYen(net)}` : `たりない −¥${fmtYen(-net)}`;
+      out += `<text x="${n.x + n.w / 2 + 2}" y="${n.y + 43}" text-anchor="middle" font-size="11" font-weight="700" fill="${!touched || net === 0 ? '#8e8e93' : net > 0 ? '#0f9d6b' : '#dc2626'}">${subTxt}</text></g>`;
+    }
+    out += labels.join('') + '</svg>';
+    return out;
+  }
+
+  function renderFlow() {
+    const pane = $('#flowPane');
+    if (!state.items.length) { pane.innerHTML = `<div class="empty"><div class="big">⇄</div>まず「口座」タブで口座を登録すると、<br>ここで口座どうしのお金の流れを<br>設定できます。</div>`; return; }
+    const g = buildGraph();
+    let html = `<div class="flow-sum">
+      <div class="fs in"><div class="l">入ってくる</div><div class="v">¥${fmtYen(g.inTotal)}</div></div>
+      <div class="fs mv"><div class="l">口座どうし</div><div class="v">¥${fmtYen(g.moveTotal)}</div></div>
+      <div class="fs out"><div class="l">出ていく</div><div class="v">¥${fmtYen(g.outTotal)}</div></div>
+    </div>`;
+    html += `<div class="diagram" id="diagram"></div>`;
+    html += `<div class="dg-hint">ひと月あたりの金額です。矢印の太さは金額の大きさ。<br>入ってくる・出ていくは、各口座の「毎月の増減」から。口座をタップで編集、矢印・金額をタップで流れを編集。</div>`;
+    html += `<div class="sec-label">口座どうしの流れ</div>`;
+    if (!g.tr.length) html += `<div class="empty-sm">まだ流れがありません。<br>右下の ＋ から「どの口座から、どの口座へ、いくら」を追加できます。</div>`;
+    else html += g.tr.slice().sort((p, q) => perMonth(q) - perMonth(p)).map((t) => {
+      const f = acctById(t.from), to = acctById(t.to), cnt = Number(t.count) || 1;
+      return `<div class="tr-card" data-tid="${t.id}">
+        <div class="who"><span class="dot" style="background:${esc(f.color)}"></span>${esc(f.bank)}<span class="arrow">→</span><span class="dot" style="background:${esc(to.color)}"></span>${esc(to.bank)}
+          ${t.name ? `<div class="nm">${esc(t.name)}</div>` : ''}</div>
+        <div class="amt">¥${fmtYen(perMonth(t))}<span class="per">${cnt > 1 ? `¥${fmtYen(t.amount)} × ${cnt}回` : '/月'}</span></div>
+      </div>`;
+    }).join('');
+    pane.innerHTML = html;
+    const box = $('#diagram');
+    box.innerHTML = diagramSVG(g, Math.max(300, box.clientWidth || pane.clientWidth - 32));
+  }
+
+  // 流れの 追加・編集
+  let editingTid = null;
+  function fillSelect(sel, value) {
+    const opts = state.items.slice().sort((a, b) => (a.candidate ? 1 : 0) - (b.candidate ? 1 : 0) || byOrder(a, b));
+    sel.innerHTML = opts.map((a) => `<option value="${a.id}">${esc(a.bank)}${a.branch ? '（' + esc(a.branch) + '）' : ''}${a.candidate ? '・戦力外' : ''}</option>`).join('');
+    if (value) sel.value = value;
+  }
+  function openTransfer(id, preset = {}) {
+    if (state.items.length < 2) { toast('口座が2つ以上あると、流れを設定できます'); return; }
+    editingTid = id || null;
+    const t = id ? state.transfers.find((x) => x.id === id) : null;
+    const act = state.items.filter((x) => !x.candidate).sort(byOrder);
+    const defFrom = t ? t.from : (preset.from || (act[0] || state.items[0]).id);
+    const defTo = t ? t.to : (preset.to || ((act.find((x) => x.id !== defFrom) || state.items.find((x) => x.id !== defFrom)).id));
+    fillSelect($('#tFrom'), defFrom); fillSelect($('#tTo'), defTo);
+    $('#tAmt').value = t && t.amount ? fmtYen(t.amount) : '';
+    $('#tCnt').value = t ? (t.count || 1) : 1;
+    $('#tName').value = t && t.name ? t.name : '';
+    $('#transferTitle').textContent = id ? '流れを編集' : '流れを追加';
+    $('#deleteTransfer').style.display = id ? 'block' : 'none';
+    showView('transferView');
+  }
+  async function saveTransfer() {
+    const from = $('#tFrom').value, to = $('#tTo').value;
+    const amount = parseYen($('#tAmt').value);
+    const count = Math.max(1, Math.min(31, parseInt(String($('#tCnt').value).replace(/[^\d]/g, ''), 10) || 1));
+    const name = $('#tName').value.trim();
+    if (from === to) { toast('出す口座と入る口座は別にしてください'); return; }
+    if (!amount) { toast('金額を入れてください'); $('#tAmt').focus(); return; }
+    const now = Date.now();
+    let t = editingTid ? state.transfers.find((x) => x.id === editingTid) : null;
+    if (t) Object.assign(t, { from, to, amount, count, name, updatedAt: now });
+    else { t = { id: uid(), from, to, amount, count, name, createdAt: now, updatedAt: now }; state.transfers.push(t); }
+    await put('transfers', t);
+    await loadAll(); renderApp(); showView('mainView'); setTab('flow');
+    toast(editingTid ? '保存しました' : '流れを追加しました');
+  }
+  async function deleteTransfer() {
+    if (!editingTid) return;
+    const t = state.transfers.find((x) => x.id === editingTid);
+    const f = t && acctById(t.from), to = t && acctById(t.to);
+    if (!(await askConfirm(`${f ? esc(f.bank) : ''} → ${to ? esc(to.bank) : ''} の流れを削除しますか？`))) return;
+    await del('transfers', editingTid);
+    await loadAll(); renderApp(); showView('mainView'); setTab('flow');
+    toast('削除しました');
+  }
+  let lastFlowW = 0;
+  function bindFlow() {
+    $('#tabbar').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
+    $('#cancelTransfer').addEventListener('click', () => showView('mainView'));
+    $('#saveTransfer').addEventListener('click', saveTransfer);
+    $('#saveTransfer2').addEventListener('click', saveTransfer);
+    $('#deleteTransfer').addEventListener('click', deleteTransfer);
+    $('#tAmt').addEventListener('input', (e) => { const n = parseYen(e.target.value); e.target.value = n ? fmtYen(n) : ''; });
+    $('#tFrom').addEventListener('change', () => { if ($('#tFrom').value === $('#tTo').value) { const o = state.items.find((x) => x.id !== $('#tFrom').value); if (o) $('#tTo').value = o.id; } });
+    $('#flowPane').addEventListener('click', (e) => {
+      const tEl = e.target.closest('[data-tid]'); if (tEl) { openTransfer(tEl.getAttribute('data-tid')); return; }
+      const aEl = e.target.closest('[data-aid]'); if (aEl) openEdit(aEl.getAttribute('data-aid'));
+    });
+    window.addEventListener('resize', () => { const w = $('#flowPane').clientWidth; if (state.tab === 'flow' && Math.abs(w - lastFlowW) > 20) { lastFlowW = w; renderFlow(); } });
   }
 
   // ---------- 起動 ----------
@@ -682,6 +1005,7 @@
     await openDB();
     await loadAll();
     renderApp();
+    setTab(state.tab);
     renderVersionLabel();
   })();
 

@@ -5,7 +5,7 @@
 // - アイコン等の静的アセットはキャッシュ優先
 // CACHE の数字を上げるたびに「新しいバージョン」として検知される。
 // リリース時は index.html の APP_VERSION と必ずセットで上げること。
-const CACHE = 'kouza-deck-v1-4-3';
+const CACHE = 'kouza-deck-v1-5-0';
 const ASSETS = [
   './',
   './index.html',
