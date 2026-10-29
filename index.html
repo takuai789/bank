@@ -338,6 +338,7 @@
   .concept { background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 18px; font-size: 13px; line-height: 1.75; color: #345; box-shadow: 0 1px 2px rgba(14,74,99,.08); }
   .concept b { color: var(--water-deep); }
 </style>
+<script>/* iPhoneが容量不足のときに保存データを消さないよう、端末にお願いしておく */try{navigator.storage&&navigator.storage.persist&&navigator.storage.persisted().then(function(p){if(!p)navigator.storage.persist();});}catch(e){}</script>
 </head>
 <body>
 <div id="app">
@@ -549,7 +550,7 @@
   function del(store, id) { return new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(id); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
 
   // ---------- バージョン ----------
-  const APP_VERSION = '1.14.0';
+  const APP_VERSION = '1.15.0';
   function renderVersionLabel() { const el = $('#versionLabel'); if (el) el.textContent = 'v' + APP_VERSION; }
 
   // ---------- State ----------
